@@ -1,0 +1,3062 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://api.finmindtrade.com https://www.twse.com.tw https://api.binance.com https://api1.binance.com https://api2.binance.com https://api3.binance.com https://data-api.binance.vision https://open.er-api.com https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>總資產總覽</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234a3aa7'/%3E%3Cpath d='M6 16l4-5 3 3 5-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f9f9f7; --surface: #fcfcfb;
+  --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
+  --hover: rgba(11, 11, 11, 0.05);
+  --accent: #256abf; --accent-ink: #ffffff;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100;
+  --c5: #e87ba4; --c6: #008300; --c7: #4a3aa7; --c8: #e34948;
+  --c-other: #a9a8a1;
+  --txt-red: #d03b3b; --txt-green: #006300;
+  --danger: #d03b3b; --st-good: #0ca30c; --st-warn: #fab219; --st-bad: #d03b3b;
+  --col-avgcost: #2a78d6; --col-costamt: #a16207;
+  --cost-fill: #ffffff; --cost-stroke: #8f8e88;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #0d0d0d; --surface: #1a1a19;
+    --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --hover: rgba(255, 255, 255, 0.07);
+    --accent: #3987e5; --accent-ink: #0b0b0b;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
+    --col-avgcost: #5b9cf0; --col-costamt: #eab308;
+    --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767;
+    --c-other: #5a5a56;
+    --txt-red: #e66767; --txt-green: #0ca30c; --danger: #e66767;
+    --cost-fill: #ffffff; --cost-stroke: transparent;
+  }
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0d0d; --surface: #1a1a19;
+    --ink: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --hover: rgba(255, 255, 255, 0.07);
+    --accent: #3987e5; --accent-ink: #0b0b0b;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
+    --col-avgcost: #5b9cf0; --col-costamt: #eab308;
+    --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767;
+    --c-other: #5a5a56;
+    --txt-red: #e66767; --txt-green: #0ca30c; --danger: #e66767;
+    --cost-fill: #ffffff; --cost-stroke: transparent;
+}
+
+:root[data-ud="red-up"] { --gain: var(--txt-red); --loss: var(--txt-green); }
+:root[data-ud="green-up"] { --gain: var(--txt-green); --loss: var(--txt-red); }
+:root:not([data-ud]) { --gain: var(--txt-red); --loss: var(--txt-green); }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+h1, h2, h3, p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+.muted { color: var(--ink-2); }
+.num { font-variant-numeric: tabular-nums; }
+.gain { color: var(--gain); }
+.loss { color: var(--loss); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- 版面 ---------- */
+.page { max-width: 1080px; margin: 0 auto; padding: 0 16px 64px; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 16px 0 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 650; margin-right: auto; }
+.brand svg { flex: none; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.status.ok .dot { background: var(--st-good); }
+.status.loading .dot { background: var(--st-warn); }
+.status.error .dot { background: var(--st-bad); }
+.tools { display: flex; gap: 6px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 36px; padding: 6px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  border: 1px solid var(--border); background: var(--surface); font-weight: 550;
+}
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.08); background: var(--accent); }
+.btn.danger { color: var(--danger); }
+.btn.danger.solid { background: var(--danger); color: #fff; border-color: transparent; }
+.btn.icon { width: 36px; padding: 0; }
+.btn.small { min-height: 28px; padding: 2px 10px; font-size: 13px; }
+.btn.link { border: 0; background: none; color: var(--accent); padding: 2px 4px; min-height: 0; text-decoration: underline; font-weight: 500; }
+.btn[disabled] { opacity: 0.5; cursor: default; }
+.is-loading { opacity: 0.6; transition: opacity 0.15s; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 8px 0 16px; align-items: flex-end; }
+.fgroup { display: flex; flex-direction: column; gap: 4px; }
+.flabel { font-size: 12px; color: var(--ink-2); }
+.segctl { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 2px; gap: 2px; }
+.segctl button { border: 0; background: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; min-height: 30px; white-space: nowrap; color: var(--ink-2); }
+.segctl button:hover { background: var(--hover); }
+.segctl button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-head h2 { font-size: 16px; font-weight: 650; margin-right: auto; }
+.card-sub { font-size: 12.5px; color: var(--ink-2); }
+.foot { font-size: 12px; color: var(--ink-2); margin-top: 8px; }
+
+.notice { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--border); border-left: 4px solid var(--st-warn);
+  border-radius: 8px; background: var(--surface); padding: 10px 12px; margin-bottom: 10px; font-size: 13.5px; }
+.notice svg { flex: none; margin-top: 2px; color: var(--ink-2); }
+.notice .grow { flex: 1; }
+
+/* ---------- 摘要 ---------- */
+.hero-label { font-size: 13px; color: var(--ink-2); }
+.hero-value { font-size: clamp(2.5rem, 7vw, 3.5rem); font-weight: 650; line-height: 1.1; margin: 4px 0; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.hero-value .unit { font-size: 0.35em; font-weight: 500; color: var(--ink-2); margin-left: 8px; letter-spacing: 0; }
+.hero-delta { font-size: 14px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 16px; }
+.tile { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.tile .t-label { font-size: 12.5px; color: var(--ink-2); }
+.tile .t-value { font-size: 22px; font-weight: 650; margin-top: 2px; overflow-wrap: anywhere; }
+.tile .t-sub { font-size: 12.5px; margin-top: 2px; color: var(--ink-2); }
+
+.empty { text-align: center; padding: 40px 16px; }
+.empty h2 { font-size: 20px; margin-bottom: 8px; }
+.empty p { color: var(--ink-2); margin-bottom: 16px; max-width: 46ch; margin-inline: auto; }
+
+/* ---------- 圖表 ---------- */
+.chart-body { min-height: 296px; }
+.bars-body.chartmode { min-height: 344px; }
+.chart-body.placeholder { display: flex; align-items: center; justify-content: center; color: var(--ink-2); }
+.legend { display: flex; gap: 16px; font-size: 13px; margin-bottom: 6px; color: var(--ink-2); }
+.legend.wrap { flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; }
+.lg-item { display: inline-flex; align-items: center; gap: 6px; }
+.lg-line { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
+.lg-box { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+svg.chart, svg.alloc { display: block; width: 100%; height: auto; max-width: 100%; }
+.chart:focus-visible { outline-offset: 4px; border-radius: 4px; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .axis { stroke: var(--axis); stroke-width: 1; }
+.chart .tick { fill: var(--ink-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.chart .endlabel { fill: var(--ink); font-size: 12px; font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; font-variant-numeric: tabular-nums; }
+.chart .cross { stroke: var(--axis); stroke-width: 1; }
+.chart .overlay { fill: transparent; touch-action: pan-y; cursor: crosshair; }
+.chart .bar.cost { fill: var(--cost-fill); stroke: var(--cost-stroke); stroke-width: 1; }
+.chart .bar.profit { fill: var(--st-good); }
+.chart .bar.loss { fill: var(--st-bad); }
+.chart .bargrp { transition: opacity 0.12s; }
+.chart .bargrp.hot { opacity: 0.78; }
+.chart .vlabel { fill: var(--ink); font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart .xlabel { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
+.chart .hit { fill: transparent; }
+.chart .hit:focus-visible { outline: none; stroke: var(--accent); stroke-width: 2; }
+.lg-box.cost { background: var(--cost-fill); border: 1px solid var(--cost-stroke); }
+.mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.mini { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px 6px; min-width: 0; }
+.mini-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; flex-wrap: wrap; }
+.mini-head .asset { margin-right: auto; }
+.mini-val { font-weight: 650; }
+.mini-pnl { font-size: 12.5px; }
+.mini-body { min-height: 200px; }
+.mini-body.placeholder { display: flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 13px; }
+.p-good { color: var(--txt-green); }
+.p-bad { color: var(--txt-red); }
+.alloc .seg { transition: filter 0.12s; }
+.alloc .seg.hot { filter: brightness(1.12); }
+.alloc .hit { fill: transparent; }
+.alloc .hit:focus-visible { outline: none; stroke: var(--accent); stroke-width: 2; }
+
+.tip { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; min-width: 170px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); }
+.tip[hidden] { display: none; }
+.tip-head { font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+.tip-row { display: flex; align-items: center; gap: 8px; padding: 1px 0; }
+.tip-key { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+.tip-key.none { background: none; }
+.tip-label { color: var(--ink-2); margin-right: auto; }
+.tip-val { font-variant-numeric: tabular-nums; }
+.tip-val.strong { font-weight: 650; }
+
+/* ---------- 表格 ---------- */
+.col-avgcost { color: var(--col-avgcost); font-weight: 600; }
+.col-costamt { color: var(--col-costamt); font-weight: 600; }
+.col-expprofit { color: var(--col-costamt); font-weight: 600; }
+.tgt-input { width: 11em; min-height: 40px; padding: 8px 10px; font-size: 15px; }
+.tgt-input::placeholder { color: var(--ink-3); }
+
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: right; font-weight: 500; color: var(--ink-2); font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+td { text-align: right; padding: 9px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; vertical-align: middle; }
+th:first-child, td:first-child { text-align: left; }
+th.l, td.l { text-align: left; }
+tfoot td { font-weight: 650; border-bottom: 0; }
+tbody tr:hover { background: var(--hover); }
+.asset { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.badge { font-size: 11px; font-weight: 500; padding: 0 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--ink-2); }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 4px; }
+.tag.buy { background: color-mix(in srgb, var(--c1) 14%, transparent); }
+.tag.sell { background: color-mix(in srgb, var(--c2) 18%, transparent); }
+.note { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+td.act { white-space: nowrap; }
+tr.bad td { background: color-mix(in srgb, var(--st-bad) 8%, transparent); }
+.txbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+select, input[type="text"], input[type="number"], input[type="datetime-local"], input[type="password"] {
+  min-height: 36px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--axis); background: var(--surface); width: 100%;
+}
+.card-head select { width: auto; min-width: 9em; }
+.inline input { flex: 1; min-width: 0; }
+.hint { font-size: 12.5px; }
+
+/* ---------- 對話框 ---------- */
+dialog.dlg { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); padding: 0;
+  width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 24px); }
+dialog.dlg::backdrop { background: rgba(0, 0, 0, 0.5); }
+.dlg-in { padding: 20px; }
+.dlg h2 { font-size: 18px; margin-bottom: 4px; }
+.dlg .lead { color: var(--ink-2); font-size: 13.5px; margin-bottom: 14px; }
+.dlg-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.field > label, .field > .flabel { font-size: 13px; color: var(--ink-2); }
+.field .hint { font-size: 12px; color: var(--ink-2); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.inline { display: flex; gap: 8px; align-items: center; }
+.err { color: var(--danger); font-size: 13px; min-height: 1.2em; margin-top: 6px; }
+.sec { border-top: 1px solid var(--grid); padding-top: 14px; margin-top: 14px; }
+.sec h3 { font-size: 14px; margin-bottom: 8px; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.total-line { font-size: 13px; color: var(--ink-2); margin: -4px 0 10px; }
+
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+  padding: 8px 16px; border-radius: 999px; font-size: 13.5px; z-index: 200; max-width: calc(100vw - 32px); }
+
+/* ---------- 鎖定畫面 ---------- */
+.lock { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.lock-card { width: min(360px, 100%); text-align: center; }
+.lock-card h1 { font-size: 22px; margin: 12px 0 4px; }
+.lock-sub { color: var(--ink-2); margin-bottom: 20px; min-height: 1.5em; }
+.pin-dots { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink-3); }
+.pin-dot.on { background: var(--ink); border-color: var(--ink); }
+.pin-dots.shake { animation: shake 0.35s; }
+@keyframes shake { 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+.lock-msg { min-height: 1.6em; font-size: 13.5px; color: var(--ink-2); margin-bottom: 12px; }
+.lock-msg.err { color: var(--danger); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto 16px; }
+.key { width: 72px; height: 72px; justify-self: center; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); font-size: 22px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+.key:hover { background: var(--hover); }
+.key:active { background: var(--axis); }
+.key.util { font-size: 13px; color: var(--ink-2); }
+.key[disabled] { opacity: 0.4; cursor: default; }
+.lock-foot { font-size: 12px; color: var(--ink-2); margin-top: 8px; }
+
+/* ---------- 手機：表格改卡片 ---------- */
+@media (max-width: 760px) {
+  .card { padding: 14px 12px; }
+  table.rt thead { display: none; }
+  table.rt, table.rt tbody, table.rt tr, table.rt td, table.rt tfoot { display: block; width: 100%; }
+  table.rt tr { border: 1px solid var(--grid); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+  table.rt td { display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 0; padding: 3px 0; text-align: right; }
+  table.rt td::before { content: attr(data-label); color: var(--ink-2); font-size: 12.5px; text-align: left; flex: none; }
+  table.rt td:first-child { font-size: 15px; padding-bottom: 6px; }
+  table.rt td:first-child::before { content: none; }
+  table.rt td.act { justify-content: flex-end; }
+  table.rt td.act::before { content: none; }
+  table.rt .note { max-width: 60%; }
+  table.rt td.tgt-cell { flex-direction: column; align-items: stretch; gap: 6px; }
+  table.rt td.tgt-cell .tgt-input { width: 100%; }
+  table.rt tfoot tr { background: var(--hover); }
+  .row2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+.holdings tfoot td, table tfoot td{white-space:nowrap}
+
+/* ---------- 篩選 / 排序列、可排序表頭 ---------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.toolbar[hidden], .toolbar .btn[hidden] { display: none; }
+.toolbar select, .toolbar input { width: auto; min-width: 0; }
+.toolbar input.q { flex: 1 1 11em; max-width: 18em; }
+.toolbar .dlab { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.toolbar input[type="date"] { min-height: 36px; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); }
+.thsort { border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.thsort:hover { color: var(--ink); text-decoration: underline; }
+.thsort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.thsort.on { color: var(--ink); font-weight: 650; }
+.sarr { font-size: 12px; }
+
+/* ---------- 調整版面對話框 ---------- */
+.order-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.order-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: var(--surface); }
+.order-item .oname { margin-right: auto; font-weight: 550; }
+.order-item .grip { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; cursor: grab; color: var(--ink-2); touch-action: none; user-select: none; border-radius: 6px; }
+.order-item .grip:hover { background: var(--hover); }
+.order-item.dragging { background: var(--hover); border-color: var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.order-item.dragging .grip { cursor: grabbing; }
+@media (max-width: 760px) {
+  .toolbar .dlab { flex: 1 1 42%; }
+  .toolbar .dlab input { flex: 1; min-width: 0; }
+  .toolbar select { flex: 1 1 8em; }
+}
+
+/* ---------- 雲端同步 ---------- */
+.syncchip { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.syncchip[hidden] { display: none; }
+.syncchip.ok { color: var(--ink-2); }
+.syncchip.syncing svg { animation: spin 1s linear infinite; }
+.syncchip.pending { color: var(--ink-2); font-style: italic; }
+.syncchip.error { color: var(--danger); border-color: var(--danger); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.howto { margin: 6px 0 12px; font-size: 13px; color: var(--ink-2); }
+.howto summary { cursor: pointer; color: var(--accent); }
+.howto ol { margin: 8px 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.codebox { width: 100%; font-family: ui-monospace, monospace; font-size: 12px; word-break: break-all; border: 1px solid var(--axis); border-radius: 8px; padding: 8px; background: var(--surface); color: var(--ink); }
+
+/* ---------- 帳本切換 ---------- */
+.prof-switch { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 2px; }
+.prof-chip { border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 4px 14px; font-size: 13px; cursor: pointer; }
+.prof-chip:hover { background: var(--hover); }
+.prof-chip[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+.proflist { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.profrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.profrow .pname { font-weight: 600; margin-right: auto; }
+
+.sname { font-weight: 450; color: var(--ink-2); margin-left: 6px; font-size: 0.92em; }
+.segctl.wrap { flex-wrap: wrap; }
+.tag, .asset, .sname { white-space: nowrap; }
+.sname.blk { display: block; margin-left: 0; font-size: 12px; }
+#f-taxkind { margin-top: 6px; width: 100%; }
+.subq { font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+.tag.div { background: color-mix(in srgb, var(--c3) 18%, transparent); }
+.tag.sdiv { background: color-mix(in srgb, var(--c4) 20%, transparent); }
+.tag.split { background: color-mix(in srgb, var(--c7) 16%, transparent); }
+.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 640px) { .row3 { grid-template-columns: 1fr; } }
+.notice .btn + .btn { margin-left: -4px; }
+/* ---------- 總覽 ---------- */
+.chart .area { fill-opacity: 0.78; stroke: var(--surface); stroke-width: 1; stroke-linejoin: round; }
+.chart .line.total { stroke: var(--ink); }
+.chart .line.costline { stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.lg-line.dash { background: none; border-top: 2px dashed var(--ink-3); height: 0; }
+.tile .t-sub + .t-sub { margin-top: 0; }
+.lock-card input { text-align: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<noscript>這個網頁需要啟用 JavaScript。</noscript>
+<script>
+/* ===== util.js ===== */
+/* ------------------------------------------------------------------
+ * Util：DOM 建構、格式化、刻度計算。所有使用者資料一律以 textContent 寫入。
+ * ------------------------------------------------------------------ */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function h(tag, props) {
+  const el = document.createElement(tag);
+  applyProps(el, props);
+  appendChildren(el, Array.prototype.slice.call(arguments, 2));
+  return el;
+}
+function s(tag, props) {
+  const el = document.createElementNS(SVG_NS, tag);
+  applyProps(el, props);
+  appendChildren(el, Array.prototype.slice.call(arguments, 2));
+  return el;
+}
+function applyProps(el, props) {
+  if (!props) return;
+  for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') el.setAttribute('class', v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.slice(0, 2) === 'on' && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'value' && 'value' in el) el.value = v;
+    else if (k === 'checked' || k === 'disabled' || k === 'selected') { if (v) el.setAttribute(k, ''); }
+    else el.setAttribute(k, v === true ? '' : String(v));
+  }
+}
+function appendChildren(el, kids) {
+  for (const c of kids) {
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) appendChildren(el, c);
+    else el.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+}
+function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); return el; }
+
+const ICONS = {
+  refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  cloud: '<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>',
+  layout: '<rect x="3" y="3" width="18" height="5" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="18" width="18" height="3" rx="1"/>',
+  up: '<polyline points="18 15 12 9 6 15"/>',
+  down: '<polyline points="6 9 12 15 18 9"/>',
+  grip: '<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  backspace: '<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+};
+function icon(name, size) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', size || 18);
+  svg.setAttribute('height', size || 18);
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = ICONS[name] || ''; // 常數字串，非使用者資料
+  return svg;
+}
+
+/* ---------- 格式化 ---------- */
+const MINUS = '−';
+function num(v, minDp, maxDp) {
+  return v.toLocaleString('en-US', { minimumFractionDigits: minDp, maximumFractionDigits: maxDp == null ? minDp : maxDp });
+}
+function fmtQty(v) {
+  if (v == null || !isFinite(v)) return '—';
+  return num(v, 0, 8);
+}
+
+function fmtPrice(v, cur) {
+  if (v == null || !isFinite(v)) return '—';
+  const a = Math.abs(v);
+  let str;
+  if (a >= 1000) str = num(v, 0, 2);
+  else if (a >= 1) str = num(v, 2, 4);
+  else if (a === 0) str = '0';
+  else str = num(Number(v.toPrecision(4)), 0, 10);
+  return str;
+}
+function fmtMoney(v, cur) {
+  if (v == null || !isFinite(v)) return '—';
+  return cur === 'TWD' ? 'NT$ ' + num(v, 0) : '$' + num(v, 2);
+}
+function fmtSigned(v, cur) {
+  if (v == null || !isFinite(v)) return '—';
+  const r = cur === 'TWD' ? Math.round(v) : Math.round(v * 100) / 100;
+  if (r === 0) return fmtMoney(0, cur);
+  return (r > 0 ? '+' : MINUS) + fmtMoney(Math.abs(r), cur);
+}
+function fmtPct(v, signed) {
+  if (v == null || !isFinite(v)) return '—';
+  const r = Math.round(v * 10000) / 100;
+  if (!signed) return num(Math.abs(r), 2) + '%';
+  if (r === 0) return '0.00%';
+  return (r > 0 ? '+' : MINUS) + num(Math.abs(r), 2) + '%';
+}
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function fmtDT(ts) {
+  const d = new Date(ts);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function fmtDate(ts, utc) {
+  const d = new Date(utc ? ts + MKT_OFFSET : ts);
+  return utc
+    ? d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate())
+    : d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+function toLocalInput(ts) {
+  const d = new Date(ts);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+}
+function signClass(v) { return v > 0 ? 'gain' : v < 0 ? 'loss' : ''; }
+function arrow(v) { return v > 0 ? '▲ ' : v < 0 ? '▼ ' : ''; }
+
+/* ---------- 刻度 ---------- */
+function niceNum(range, round) {
+  const exp = Math.floor(Math.log10(range));
+  const f = range / Math.pow(10, exp);
+  let nf;
+  if (round) nf = f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10;
+  else nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+  return nf * Math.pow(10, exp);
+}
+function niceTicks(min, max, count) {
+  if (!(max > min)) { const pad = Math.abs(max) * 0.05 || 1; min -= pad; max += pad; }
+  const range = niceNum(max - min, false);
+  const step = niceNum(range / (count - 1), true);
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let v = lo; v <= hi + step * 0.5; v += step) ticks.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+  return { ticks, min: lo, max: hi, step };
+}
+function compact(v, cur) {
+  const a = Math.abs(v);
+  if (a >= 1e8 && cur === 'TWD') return num(v / 1e8, 0, 2) + '億';
+  if (a >= 1e4 && cur === 'TWD') return num(v / 1e4, 0, 1) + '萬';
+  if (a >= 1e6) return num(v / 1e6, 0, 2) + 'M';
+  if (a >= 1e3) return num(v, 0, 0);
+  return num(v, 0, a < 10 ? 2 : 1);
+}
+function uid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+function csvCell(v) {
+  let t = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; // 防止試算表公式注入
+  if (/[",\n\r]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"';
+  return t;
+}
+/* ===== vault.js ===== */
+/* ------------------------------------------------------------------
+ * Vault：以 4 位數密碼（PBKDF2 → AES-GCM）加密後存進瀏覽器 localStorage。
+ * 資料只存在這台裝置的瀏覽器裡，不會上傳到 GitHub 或任何伺服器。
+ * ------------------------------------------------------------------ */
+const Vault = (function () {
+  // 多帳本：'default' 沿用舊版沒有帳本切換功能時的 key（不用搬資料，舊使用者自動相容）；
+  // 其他帳本用各自的 id 加上後綴，彼此完全獨立的 localStorage 空間。
+  function keyData(id) { return id === 'default' ? 'assetoverview.vault.v1' : 'assetoverview.vault.' + id + '.v1'; }
+  function keyMeta(id) { return id === 'default' ? 'assetoverview.meta.v1' : 'assetoverview.meta.' + id + '.v1'; }
+  const ITER = 250000;
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+
+  function store() {
+    try { return window.localStorage; } catch (e) { return null; }
+  }
+  function get(k) { const st = store(); try { return st ? st.getItem(k) : null; } catch (e) { return null; } }
+  function set(k, v) {
+    const st = store();
+    if (!st) throw new Error('NO_STORAGE');
+    st.setItem(k, v);
+  }
+  function del(k) { const st = store(); try { if (st) st.removeItem(k); } catch (e) { /* ignore */ } }
+
+  function toB64(buf) {
+    const bytes = new Uint8Array(buf);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function fromB64(str) {
+    const bin = atob(str);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function supported() {
+    return !!(window.crypto && crypto.subtle && store());
+  }
+
+  async function deriveKey(pin, salt, iter) {
+    const base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+
+  async function seal(session, data) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, session.key, enc.encode(JSON.stringify(data)));
+    return { v: 1, iter: session.iter, salt: toB64(session.salt), iv: toB64(iv), ct: toB64(ct) };
+  }
+
+  async function openEnvelope(env, pin) {
+    if (!env || env.v !== 1 || !env.salt || !env.iv || !env.ct) throw new Error('BAD_FORMAT');
+    const salt = fromB64(env.salt);
+    const iter = env.iter || ITER;
+    const key = await deriveKey(pin, salt, iter);
+    let plain;
+    try {
+      plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(env.iv) }, key, fromB64(env.ct));
+    } catch (e) { throw new Error('BAD_PIN'); }
+    return { session: { key, salt, iter }, data: JSON.parse(dec.decode(plain)) };
+  }
+
+  function has(id) { return !!get(keyData(id)); }
+
+  async function create(id, pin, data) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const session = { id, key: await deriveKey(pin, salt, ITER), salt, iter: ITER };
+    set(keyData(id), JSON.stringify(await seal(session, data)));
+    return session;
+  }
+
+  /** session 本身帶著 id（哪個帳本），存回原本那個帳本的位置 */
+  async function save(session, data) {
+    set(keyData(session.id), JSON.stringify(await seal(session, data)));
+  }
+
+  async function unlock(id, pin) {
+    const raw = get(keyData(id));
+    if (!raw) throw new Error('NO_VAULT');
+    const r = await openEnvelope(JSON.parse(raw), pin);
+    r.session.id = id;
+    return r;
+  }
+
+  /** 換密碼：以新 PIN 與新 salt 重新加密同一份資料（同一個帳本） */
+  async function rekey(id, newPin, data) {
+    return create(id, newPin, data);
+  }
+
+  function exportBackup(id) { return get(keyData(id)); }
+  /** 以目前 session 的金鑰把指定資料封成備份（用來匯出「不含同步 Token」的備份） */
+  async function exportSealed(session, data) { return JSON.stringify(await seal(session, data)); }
+
+  /* ---- 雲端同步用：任意密碼加密／解密（與本機保險庫分開，salt 由雲端檔案決定） ---- */
+  async function newSession(pw) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    return { key: await deriveKey(pw, salt, ITER), salt, iter: ITER };
+  }
+  async function sealWith(session, data) { return seal(session, data); }
+  /** 解開信封；若 salt 與快取的 session 相同就直接用快取金鑰（省掉 25 萬次 PBKDF2） */
+  async function openAny(env, pw, cached) {
+    if (cached && env && env.salt === toB64(cached.salt) && (env.iter || ITER) === cached.iter) {
+      let plain;
+      try { plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(env.iv) }, cached.key, fromB64(env.ct)); }
+      catch (e) { throw new Error('BAD_PIN'); }
+      return { session: cached, data: JSON.parse(dec.decode(plain)) };
+    }
+    return openEnvelope(env, pw);
+  }
+
+  /** 解密備份檔（需輸入建立該備份時的密碼），回傳資料物件 */
+  async function readBackup(text, pin) {
+    let env;
+    try { env = JSON.parse(text); } catch (e) { throw new Error('BAD_FORMAT'); }
+    const r = await openEnvelope(env, pin);
+    return r.data;
+  }
+
+  /** 只清這個帳本的保險庫（不影響其他帳本） */
+  function reset(id) { del(keyData(id)); del(keyMeta(id)); }
+
+  /* ---- 嘗試次數與鎖定（僅為前端層級的減速帶；每個帳本各自計算） ---- */
+  function meta(id) {
+    try { return JSON.parse(get(keyMeta(id))) || { fails: 0, until: 0 }; } catch (e) { return { fails: 0, until: 0 }; }
+  }
+  function lockRemainingMs(id) { return Math.max(0, meta(id).until - Date.now()); }
+  function recordFail(id) {
+    const m = meta(id);
+    m.fails = (m.fails || 0) + 1;
+    if (m.fails % 5 === 0) {
+      const level = Math.floor(m.fails / 5) - 1;
+      m.until = Date.now() + Math.min(30 * Math.pow(2, level), 3600) * 1000;
+    }
+    try { set(keyMeta(id), JSON.stringify(m)); } catch (e) { /* ignore */ }
+    return { fails: m.fails, remainingTries: 5 - (m.fails % 5), lockedMs: Math.max(0, m.until - Date.now()) };
+  }
+  function clearFails(id) { del(keyMeta(id)); }
+
+  return { supported, has, create, save, unlock, rekey, exportBackup, exportSealed, newSession, sealWith, openAny, readBackup, reset, lockRemainingMs, recordFail, clearFails };
+})();
+
+/* ===== charts.js ===== */
+/* ------------------------------------------------------------------
+ * Charts：純 SVG，無外部套件。含 hover / 鍵盤瀏覽的提示框。
+ * ------------------------------------------------------------------ */
+const Tip = (function () {
+  let el = null;
+  function ensure() {
+    if (!el) { el = h('div', { class: 'tip', role: 'tooltip' }); el.hidden = true; document.body.appendChild(el); }
+    return el;
+  }
+  function show(cx, cy, nodes) {
+    const t = clear(ensure());
+    nodes.forEach((n) => t.appendChild(n));
+    t.hidden = false;
+    const w = t.offsetWidth, hh = t.offsetHeight;
+    let x = cx + 14, y = cy - hh - 12;
+    if (x + w > window.innerWidth - 8) x = cx - w - 14;
+    if (x < 8) x = 8;
+    if (y < 8) y = cy + 18;
+    t.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+  }
+  function hide() { if (el) el.hidden = true; }
+  return { show, hide };
+})();
+
+function tipRow(keyColor, label, value, strong) {
+  return h('div', { class: 'tip-row' },
+    keyColor ? h('span', { class: 'tip-key', style: { background: keyColor } }) : h('span', { class: 'tip-key none' }),
+    h('span', { class: 'tip-label' }, label),
+    h('span', { class: 'tip-val' + (strong ? ' strong' : '') }, value));
+}
+
+function allocBar(container, rows, o) {
+  clear(container);
+  const cur = o.cur;
+  const priced = rows.filter((r) => r.value > 0);
+  const total = priced.reduce((a, r) => a + r.value, 0);
+  if (!(total > 0)) { container.appendChild(h('p', { class: 'muted' }, '尚無可估值的持股。')); return; }
+
+  const segs = [];
+  const other = { asset: '其他', value: 0, names: [], color: 'var(--c-other)' };
+  for (const r of priced) {
+    const color = o.colorOf(r.asset);
+    if (color && r.value / total >= 0.015) segs.push({ asset: r.asset, value: r.value, color });
+    else { other.value += r.value; other.names.push(r.asset); }
+  }
+  if (other.value > 0) segs.push(other);
+
+  const W = Math.max(container.clientWidth || 600, 240), H = 32, barY = 6, barH = 20;
+  const clipId = 'allocClip' + Math.floor(Math.random() * 1e9);
+  const svg = s('svg', { class: 'alloc', viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'group', 'aria-label': '資產配置比例' });
+  svg.appendChild(s('defs', null, s('clipPath', { id: clipId }, s('rect', { x: 0, y: barY, width: W, height: barH, rx: 4, ry: 4 }))));
+  const g = s('g', { 'clip-path': 'url(#' + clipId + ')' });
+  svg.appendChild(g);
+
+  let x = 0;
+  segs.forEach((sg, i) => {
+    const w = (sg.value / total) * W;
+    const gapL = i > 0 ? 1 : 0, gapR = i < segs.length - 1 ? 1 : 0;
+    const seg = s('rect', { class: 'seg', x: x + gapL, y: barY, width: Math.max(w - gapL - gapR, 0.5), height: barH, style: { fill: sg.color } });
+    g.appendChild(seg);
+    const share = sg.value / total;
+    const label = sg.asset + ' ' + fmtPct(share);
+    const hit = s('rect', { class: 'hit', x, y: 0, width: Math.max(w, 1), height: H, tabindex: 0, role: 'img', 'aria-label': label + '，市值 ' + fmtMoney(sg.value, cur) });
+    const show = (cx, cy) => {
+      seg.classList.add('hot');
+      const rowsEl = [
+        h('div', { class: 'tip-head' }, sg.asset + (sg.names ? '（' + sg.names.join('、') + '）' : '')),
+        tipRow(sg.color, '市值', fmtMoney(sg.value, cur), true),
+        tipRow(null, '占比', fmtPct(share), false),
+      ];
+      Tip.show(cx, cy, rowsEl);
+    };
+    const hide = () => { seg.classList.remove('hot'); Tip.hide(); };
+    hit.addEventListener('pointermove', (e) => show(e.clientX, e.clientY));
+    hit.addEventListener('pointerdown', (e) => show(e.clientX, e.clientY));
+    hit.addEventListener('pointerleave', hide);
+    hit.addEventListener('focus', () => { const r = hit.getBoundingClientRect(); show(r.left + r.width / 2, r.top); });
+    hit.addEventListener('blur', hide);
+    svg.appendChild(hit);
+    x += w;
+  });
+
+  const legend = h('div', { class: 'legend wrap' }, segs.map((sg) =>
+    h('span', { class: 'lg-item' },
+      h('span', { class: 'lg-box', style: { background: sg.color } }),
+      h('span', null, sg.asset),
+      h('span', { class: 'muted num' }, fmtPct(sg.value / total)))));
+  container.appendChild(svg);
+  container.appendChild(legend);
+}
+const TW = (function () {
+/* ===== engine.js ===== */
+/* ------------------------------------------------------------------
+ * Engine：交易流水 → 持股 / 成本 / 損益（純函式，無 DOM、無網路）
+ * 金額一律為新台幣；數量一律為「股」。
+ * 交易類型：
+ *   buy   買入：qty 股 × price，fee 手續費
+ *   sell  賣出：qty 股 × price，fee 手續費，tax 證交稅
+ *   div   現金股利：qty = 參與配息股數，price = 每股配息，fee = 補充保費／匯費等扣款
+ *   sdiv  股票股利（配股）：qty = 配發股數，fee = 扣款（例如補充保費）；總成本不變
+ *   split 分割／合併／減資：qty = 換股比例（新股數 ÷ 舊股數），price = 每股（舊股）退還現金
+ * ------------------------------------------------------------------ */
+const Engine = (function () {
+  const EPS = 1e-9;
+  // 同一時間：公司行動（分割、配股）先套用，再處理買入、配息，最後才是賣出；最後以 id 穩定排序
+  const TYPE_ORDER = { split: 0, sdiv: 1, buy: 2, div: 3, sell: 4 };
+  const TYPES = ['buy', 'sell', 'div', 'sdiv', 'split'];
+
+  function sortTx(txs) {
+    return txs.slice().sort((a, b) => {
+      if (a.ts !== b.ts) return a.ts - b.ts;
+      const ta = TYPE_ORDER[a.type] == null ? 9 : TYPE_ORDER[a.type];
+      const tb = TYPE_ORDER[b.type] == null ? 9 : TYPE_ORDER[b.type];
+      if (ta !== tb) return ta - tb;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    });
+  }
+
+  /** 只有買賣才是「市場成交價」；股利、分割的 price 欄位意義不同 */
+  function isTrade(t) { return t.type === 'buy' || t.type === 'sell'; }
+
+  function newPos(asset) {
+    return {
+      asset, qty: 0, cost: 0, lots: [],
+      realized: 0, boughtQty: 0, boughtCost: 0, soldQty: 0, soldProceeds: 0,
+      fees: 0, taxes: 0, dividends: 0, returned: 0,
+      firstTs: null, lastPrice: null,
+    };
+  }
+
+  /** 股數改變但總成本不變（配股、分割）：FIFO 各批依比例放大股數、攤低單價 */
+  function scaleLots(p, factor) {
+    if (!(factor > 0)) return;
+    p.lots.forEach((l) => { l.qty *= factor; l.unit /= factor; });
+  }
+
+  /**
+   * 依序重播交易。
+   * opts.method: 'avg'（加權平均）| 'fifo'
+   * opts.upTo:   只計算到此時間戳（含）
+   */
+  function replay(txs, opts) {
+    opts = opts || {};
+    const method = opts.method === 'fifo' ? 'fifo' : 'avg';
+    const upTo = opts.upTo == null ? Infinity : opts.upTo;
+    const positions = {};
+    const events = {};
+    const issues = [];
+
+    for (const tx of sortTx(txs)) {
+      if (tx.ts > upTo) break;
+      const fee = tx.fee || 0;
+      const tax = tx.tax || 0;
+      const p = positions[tx.asset] || (positions[tx.asset] = newPos(tx.asset));
+
+      if (tx.type === 'buy') {
+        if (p.firstTs == null) p.firstTs = tx.ts;
+        p.lastPrice = tx.price;
+        const total = tx.qty * tx.price + fee;
+        p.fees += fee;
+        p.qty += tx.qty;
+        p.cost += total;
+        p.boughtQty += tx.qty;
+        p.boughtCost += total;
+        if (method === 'fifo') p.lots.push({ qty: tx.qty, unit: total / tx.qty });
+        events[tx.id] = { type: 'buy', total };
+      } else if (tx.type === 'sell') {
+        p.lastPrice = tx.price;
+        p.fees += fee;
+        p.taxes += tax;
+        let q = tx.qty;
+        if (q > p.qty + EPS * Math.max(1, p.qty)) {
+          issues.push({ id: tx.id, kind: 'oversell', asset: tx.asset, short: q - p.qty });
+          q = Math.max(p.qty, 0);
+        }
+        let costOut = 0;
+        if (q > 0) {
+          if (method === 'avg') {
+            costOut = p.qty > 0 ? p.cost * (q / p.qty) : 0;
+          } else {
+            let need = q;
+            while (need > EPS && p.lots.length) {
+              const lot = p.lots[0];
+              const take = Math.min(lot.qty, need);
+              costOut += take * lot.unit;
+              lot.qty -= take;
+              need -= take;
+              if (lot.qty <= EPS) p.lots.shift();
+            }
+          }
+        }
+        const proceeds = q * tx.price - fee - tax;
+        const pnl = proceeds - costOut;
+        p.qty -= q;
+        p.cost -= costOut;
+        p.realized += pnl;
+        p.soldQty += q;
+        p.soldProceeds += proceeds;
+        events[tx.id] = { type: 'sell', proceeds, costOut, pnl, qty: q };
+      } else if (tx.type === 'div') {
+        const cash = tx.qty * tx.price - fee;
+        p.realized += cash;
+        p.dividends += cash;
+        events[tx.id] = { type: 'div', cash, pnl: cash };
+      } else if (tx.type === 'sdiv') {
+        if (p.qty <= EPS) issues.push({ id: tx.id, kind: 'nopos', asset: tx.asset });
+        const before = p.qty;
+        p.qty += tx.qty;
+        if (method === 'fifo') {
+          if (before > EPS) scaleLots(p, p.qty / before);
+          else p.lots.push({ qty: tx.qty, unit: 0 });
+        }
+        if (fee) { p.realized -= fee; p.dividends -= fee; }
+        events[tx.id] = { type: 'sdiv', qty: tx.qty, pnl: fee ? -fee : 0 };
+      } else if (tx.type === 'split') {
+        const ratio = tx.qty;
+        const before = p.qty;
+        if (before <= EPS) {
+          issues.push({ id: tx.id, kind: 'nopos', asset: tx.asset });
+          events[tx.id] = { type: 'split', before: 0, after: 0, cash: 0, pnl: 0 };
+        } else {
+          let after = before * ratio;
+          // 台股減資／合併：不足一股的零股以現金發還，這裡直接捨去（金額很小，可另用「退還現金」補記）
+          if (Math.abs(before - Math.round(before)) < EPS) after = Math.floor(after + 1e-6);
+          const cash = Math.max(0, before * (tx.price || 0) - fee);
+          const costBefore = p.cost;
+          p.qty = after;
+          if (method === 'fifo') scaleLots(p, after / before);
+          // 減資退還的現金視為「拿回本金」：先沖減成本，超過成本的部分才算已實現獲利
+          let gain = 0;
+          if (cash > 0) {
+            const back = Math.min(cash, costBefore);
+            gain = cash - back;
+            p.cost -= back;
+            if (method === 'fifo' && costBefore > 0) {
+              const k = p.cost / costBefore;
+              p.lots.forEach((l) => { l.unit *= k; });
+            }
+            p.returned += cash;
+            p.realized += gain;
+          }
+          events[tx.id] = { type: 'split', before, after, cash, pnl: gain };
+        }
+      }
+
+      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; p.lots = []; }
+    }
+
+    for (const a in positions) {
+      const p = positions[a];
+      p.avgCost = p.qty > 0 ? p.cost / p.qty : 0;
+    }
+    return { positions, events, issues };
+  }
+
+  /**
+   * 以價格表估值。priceOf(asset) → { price, pct, src, date } | null
+   * 無報價的持股 value = null，不計入市值，但會回報在 missing。
+   */
+  function summarize(result, priceOf) {
+    const rows = [];
+    const missing = [];
+    let value = 0, cost = 0, dayChange = 0, realized = 0, bought = 0, fees = 0, taxes = 0, dividends = 0;
+    for (const a in result.positions) {
+      const p = result.positions[a];
+      realized += p.realized;
+      bought += p.boughtCost;
+      fees += p.fees;
+      taxes += p.taxes;
+      dividends += p.dividends;
+      if (p.qty <= 0) continue;
+      const q = priceOf(a);
+      const row = {
+        asset: a, qty: p.qty, cost: p.cost, avgCost: p.avgCost, realized: p.realized,
+        bought: p.boughtCost, sold: p.soldProceeds + p.returned, dividends: p.dividends,
+        price: q ? q.price : null, pct: q && q.pct != null ? q.pct : null, src: q ? q.src : null, date: q ? q.date : null,
+        value: null, unrealized: null, unrealizedPct: null,
+      };
+      if (q) {
+        row.value = p.qty * q.price;
+        row.unrealized = row.value - p.cost;
+        row.unrealizedPct = p.cost > 0 ? row.unrealized / p.cost : null;
+        value += row.value;
+        cost += p.cost;
+        if (q.pct != null && q.pct > -100) {
+          const prev = q.price / (1 + q.pct / 100);
+          dayChange += p.qty * (q.price - prev);
+        }
+      } else {
+        missing.push(a);
+      }
+      rows.push(row);
+    }
+    rows.sort((x, y) => (y.value || 0) - (x.value || 0));
+    for (const r of rows) r.share = r.value != null && value > 0 ? r.value / value : null;
+    const unrealized = value - cost;
+    return {
+      rows, missing, value, cost, unrealized,
+      unrealizedPct: cost > 0 ? unrealized / cost : null,
+      realized, bought, fees, taxes, dividends,
+      total: unrealized + realized,
+      totalPct: bought > 0 ? (unrealized + realized) / bought : null,
+      dayChange,
+      dayChangePct: value - dayChange > 0 ? dayChange / (value - dayChange) : null,
+    };
+  }
+
+  /**
+   * 各股「成本 / 盈虧」直條資料（以現金流計算，與成本算法無關）。
+   *   尚未取回的成本 net = 累計買入（含手續費）− 賣出回收（已扣費稅）− 減資退款 − 累計現金股利
+   *   net > 0：未回本
+   *     市值 ≥ net → white = net（成本），profit = 市值 − net
+   *     市值 <  net → white = 市值，loss = net − 市值
+   *   net ≤ 0：已取回全部成本 → 只留 profit = 目前市值（白色成本消失）
+   * pnl = 市值 − net = 已實現（含股利）+ 未實現（總損益）。
+   */
+  function assetBars(rows, opts) {
+    opts = opts || {};
+    const sortBy = opts.sortBy === 'amount' ? 'amount' : 'pct';
+    const dir = opts.dir === 'asc' ? 'asc' : 'desc';
+    const mul = dir === 'asc' ? -1 : 1;
+    const out = [];
+    for (const r of rows) {
+      if (r.value == null) continue;
+      const divs = r.dividends || 0;
+      const net = r.bought - r.sold - divs;
+      const recovered = net <= EPS * Math.max(1, r.bought);
+      let white = 0, profit = 0, loss = 0;
+      if (recovered) profit = r.value;
+      else if (r.value >= net) { white = net; profit = r.value - net; }
+      else { white = r.value; loss = net - r.value; }
+      out.push({
+        asset: r.asset, bought: r.bought, sold: r.sold, dividends: divs, net, recovered, value: r.value,
+        white, profit, loss, height: white + profit + loss,
+        pnl: r.value - net, pct: r.bought > EPS ? (r.value - net) / r.bought : null,
+      });
+    }
+    // 依報酬率或金額排序；沒有成本可比的（例如全部來自配股）永遠排最後
+    return out.sort((a, b) => {
+      const av = sortBy === 'amount' ? a.pnl : a.pct;
+      const bv = sortBy === 'amount' ? b.pnl : b.pct;
+      if (sortBy === 'pct') {
+        if (a.pct == null && b.pct == null) return b.height - a.height;
+        if (a.pct == null) return 1;
+        if (b.pct == null) return -1;
+      }
+      return mul * (bv - av);
+    });
+  }
+
+  /**
+   * 單一方向（獲利或虧損）的門檻跨越狀態機。
+   * tiers：由小到大排序的門檻（百分比數字，例如 [50,100]）。
+   * pctAbs：目前幅度（百分比，非負）。
+   * prevIdx：目前已觸發到的最高門檻索引（-1 = 尚未觸發任何一階）。
+   * hysteresis：回落多少個百分點以下才允許同一階重新觸發。
+   */
+  function tierState(pctAbs, tiers, prevIdx, hysteresis) {
+    hysteresis = hysteresis || 0;
+    let idx = prevIdx == null ? -1 : prevIdx;
+    if (idx >= tiers.length) idx = tiers.length - 1;
+    const crossed = [];
+    while (idx >= 0 && pctAbs < tiers[idx] - hysteresis) idx--;
+    while (idx + 1 < tiers.length && pctAbs >= tiers[idx + 1]) { idx++; crossed.push(tiers[idx]); }
+    return { idx, crossed };
+  }
+
+  function checkAlerts(bars, cfg, state) {
+    cfg = cfg || {};
+    const profitTiers = Array.isArray(cfg.profitTiers) ? cfg.profitTiers : [];
+    const lossTiers = Array.isArray(cfg.lossTiers) ? cfg.lossTiers : [];
+    const hysteresis = cfg.hysteresis || 0;
+    state = state || {};
+    const nextState = {};
+    const events = [];
+    for (const b of bars) {
+      if (b.pct == null) continue;
+      const prev = state[b.asset] || { profitIdx: -1, lossIdx: -1 };
+      const pctPt = b.pct * 100;
+      const pr = tierState(pctPt, profitTiers, prev.profitIdx, hysteresis);
+      const lossAbs = pctPt < 0 ? -pctPt : 0;
+      const lo = tierState(lossAbs, lossTiers, prev.lossIdx, hysteresis);
+      nextState[b.asset] = { profitIdx: pr.idx, lossIdx: lo.idx };
+      pr.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'profit', tier: t }));
+      lo.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'loss', tier: t }));
+    }
+    return { state: nextState, events };
+  }
+
+  /** 找到某股在 ts（含）之前最後一筆「買賣」成交價；找不到回傳 null */
+  function lastTradePrice(sortedByAsset, asset, ts) {
+    const arr = sortedByAsset[asset];
+    if (!arr) return null;
+    let out = null;
+    for (const t of arr) { if (t.ts <= ts) { if (isTrade(t)) out = t.price; } else break; }
+    return out;
+  }
+
+  /**
+   * 每日淨值曲線。
+   * days: 各日「收盤時間戳」陣列（升冪）；最後一點另以 nowTs + priceNow 計算。
+   * priceAt(asset, dayEndTs) → 該日（或之前最近一個交易日）收盤價 | null；null 時退回最近成交價。
+   * priceNow(asset) → 目前價格 | null
+   */
+  function netWorthSeries(txs, o) {
+    const sorted = sortTx(txs);
+    const byAsset = {};
+    for (const t of sorted) (byAsset[t.asset] || (byAsset[t.asset] = [])).push(t);
+    const pts = [];
+
+    function point(ts, priceFn) {
+      const r = replay(sorted, { method: o.method, upTo: ts });
+      let value = 0, cost = 0;
+      for (const a in r.positions) {
+        const p = r.positions[a];
+        if (p.qty <= 0) continue;
+        let px = priceFn(a);
+        if (px == null) px = lastTradePrice(byAsset, a, ts);
+        if (px == null) continue;
+        value += p.qty * px;
+        cost += p.cost;
+      }
+      return { ts, value, cost };
+    }
+
+    for (const dayEnd of o.days) {
+      if (dayEnd >= o.nowTs) continue;
+      if (dayEnd < sorted[0].ts) continue;
+      pts.push(point(dayEnd, (a) => o.priceAt(a, dayEnd)));
+    }
+    pts.push(point(o.nowTs, (a) => o.priceNow(a)));
+    return pts;
+  }
+
+  /** 某時間點（不含）之前的持股數 */
+  function qtyBefore(txs, asset, ts) {
+    const r = replay(txs.filter((t) => t.asset === asset), { method: 'avg', upTo: ts - 1 });
+    const p = r.positions[asset];
+    return p ? p.qty : 0;
+  }
+
+  return { EPS, TYPES, sortTx, isTrade, replay, summarize, assetBars, tierState, checkAlerts, netWorthSeries, lastTradePrice, qtyBefore };
+})();
+
+/* ===== market.js ===== */
+/* ------------------------------------------------------------------
+ * Market：台股行情（FinMind 公開資料 API，證交所備援）
+ *   - 報價：每日收盤價（盤中為最近一個交易日的收盤；不是即時成交價）
+ *   - 歷史：日收盤價（未還原權息，搭配帳本裡的配股／分割紀錄即可正確估值）
+ *   - 股利、分割：用來提示「可能漏記的配息／配股／分割」
+ * ------------------------------------------------------------------ */
+const TW_OFFSET = 8 * 3600000;
+const DAY = 86400000;
+/** 台灣日期的 00:00（毫秒時間戳） */
+function twDayStart(ts) { return Math.floor((ts + TW_OFFSET) / DAY) * DAY - TW_OFFSET; }
+/** 時間戳 → 台灣日期字串 YYYY-MM-DD */
+function twDateStr(ts) {
+  const d = new Date(ts + TW_OFFSET);
+  return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
+}
+/** YYYY-MM-DD（台灣日期）→ 當天 00:00 的時間戳 */
+function twDateTs(str) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(str || '');
+  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) - TW_OFFSET : null;
+}
+/** 台灣時間的星期（0=日） */
+function twWeekday(ts) { return new Date(ts + TW_OFFSET).getUTCDay(); }
+/** 是否在台股交易時段附近（週一至五 08:55–14:35，台灣時間；不含國定假日判斷） */
+function twMarketOpen(ts) {
+  const wd = twWeekday(ts);
+  if (wd === 0 || wd === 6) return false;
+  const min = Math.floor(((ts + TW_OFFSET) % DAY) / 60000);
+  return min >= 535 && min <= 875;
+}
+
+const Market = (function () {
+  const FM = 'https://api.finmindtrade.com/api/v4/data';
+  const TWSE = 'https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY';
+  const INFO_KEY = 'twstockledger.info.v1';
+  let token = '';
+
+  function setToken(t) { token = (t || '').trim(); }
+
+  async function fetchWithTimeout(url, ms) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), ms || 12000);
+    try { return await fetch(url, { signal: ctl.signal, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' }); }
+    finally { clearTimeout(timer); }
+  }
+
+  async function fm(params, ms) {
+    const p = Object.assign({}, params);
+    if (token) p.token = token;
+    const res = await fetchWithTimeout(FM + '?' + new URLSearchParams(p).toString(), ms);
+    let j = null;
+    try { j = await res.json(); } catch (e) { /* ignore */ }
+    const st = j && j.status != null ? j.status : res.status;
+    if (!res.ok || st !== 200) {
+      const e = new Error((j && j.msg) || ('HTTP ' + res.status));
+      e.status = st === 200 ? res.status : st;
+      e.src = 'FinMind';
+      throw e;
+    }
+    return Array.isArray(j.data) ? j.data : [];
+  }
+
+  /** 同時最多 n 個請求 */
+  async function pool(items, n, fn) {
+    const out = [];
+    let i = 0;
+    async function worker() { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } }
+    await Promise.all(Array.from({ length: Math.min(n, items.length) }, worker));
+    return out;
+  }
+
+  /** 證交所備援（只有上市股票）：當月＋上月日成交資訊 */
+  function rocToIso(s) {
+    const m = /^(\d{2,3})\/(\d{2})\/(\d{2})$/.exec((s || '').trim());
+    return m ? (+m[1] + 1911) + '-' + m[2] + '-' + m[3] : null;
+  }
+  async function twseMonth(code, ts) {
+    const d = new Date(ts + TW_OFFSET);
+    const ym = d.getUTCFullYear() + pad2(d.getUTCMonth() + 1) + '01';
+    const res = await fetchWithTimeout(TWSE + '?' + new URLSearchParams({ response: 'json', date: ym, stockNo: code }).toString(), 10000);
+    if (!res.ok) { const e = new Error('HTTP ' + res.status); e.status = res.status; e.src = 'TWSE'; throw e; }
+    const j = await res.json();
+    if (!j || j.stat !== 'OK' || !Array.isArray(j.data)) return [];
+    return j.data.map((r) => ({ date: rocToIso(r[0]), close: parseFloat(String(r[6]).replace(/,/g, '')) }))
+      .filter((r) => r.date && r.close > 0);
+  }
+  async function twseQuote(code) {
+    const now = Date.now();
+    let rows = await twseMonth(code, now);
+    if (rows.length < 2) rows = (await twseMonth(code, now - 25 * DAY)).concat(rows);
+    if (!rows.length) return null;
+    const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+    return { price: last.close, pct: prev ? (last.close / prev.close - 1) * 100 : null, date: last.date, src: 'TWSE' };
+  }
+
+  /**
+   * 取得多檔股票的最新收盤價與漲跌幅（相對前一交易日）。
+   * 回傳 { prices: {code: {price, pct, date}}, unknown: [...], limited: bool }
+   */
+  async function fetchQuotes(codes) {
+    const prices = {};
+    const unknown = [];
+    let limited = false, netErr = null;
+    const start = twDateStr(Date.now() - 20 * DAY);
+    await pool(codes, 4, async (c) => {
+      let q = null, triedFm = false;
+      if (!limited) {
+        try {
+          triedFm = true;
+          const rows = (await fm({ dataset: 'TaiwanStockPrice', data_id: c, start_date: start })).filter((r) => r.close > 0);
+          if (rows.length) {
+            const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+            q = { price: last.close, pct: prev ? (last.close / prev.close - 1) * 100 : null, date: last.date, src: 'FinMind' };
+          } else { unknown.push(c); return; }
+        } catch (e) {
+          if (e.status === 402 || e.status === 429) limited = true;
+          else netErr = e;
+        }
+      }
+      if (!q && (limited || !triedFm || netErr)) {
+        try { q = await twseQuote(c); } catch (e) { netErr = netErr || e; }
+        if (!q && !netErr && !limited) unknown.push(c);
+      }
+      if (q) prices[c] = q;
+    });
+    if (!Object.keys(prices).length && codes.length && (netErr || limited)) {
+      const e = netErr || new Error('RATE');
+      if (limited) e.status = 402;
+      throw e;
+    }
+    const missing = codes.filter((c) => !prices[c] && unknown.indexOf(c) < 0);
+    return { prices, unknown, missing, limited };
+  }
+
+  /** 日收盤（台灣日期）。回傳 [{day, close}]，day 為台灣當日 00:00 的時間戳，升冪 */
+  async function fetchDailyCloses(code, startTs) {
+    const rows = await fm({ dataset: 'TaiwanStockPrice', data_id: code, start_date: twDateStr(startTs) }, 20000);
+    return rows.filter((r) => r.close > 0).map((r) => ({ day: twDateTs(r.date), close: r.close }))
+      .filter((r) => r.day != null).sort((a, b) => a.day - b.day);
+  }
+
+  /**
+   * 除權息與分割事件（給「可能漏記」提示用）。
+   * 回傳 [{kind:'div'|'sdiv'|'split', exDate, payDate, perShare, ratio}]
+   */
+  async function fetchCorpActions(code, startTs) {
+    const start = twDateStr(startTs - 400 * DAY);
+    const out = [];
+    const [divs, splits] = await Promise.all([
+      fm({ dataset: 'TaiwanStockDividend', data_id: code, start_date: start }).catch(() => []),
+      fm({ dataset: 'TaiwanStockSplitPrice', data_id: code, start_date: start }).catch(() => []),
+    ]);
+    divs.forEach((r) => {
+      const cash = (+r.CashEarningsDistribution || 0) + (+r.CashStatutorySurplus || 0);
+      if (cash > 0 && r.CashExDividendTradingDate) out.push({ kind: 'div', exDate: r.CashExDividendTradingDate, payDate: r.CashDividendPaymentDate || '', perShare: Math.round(cash * 1e6) / 1e6, year: r.year || '' });
+      const stock = (+r.StockEarningsDistribution || 0) + (+r.StockStatutorySurplus || 0);
+      if (stock > 0 && r.StockExDividendTradingDate) out.push({ kind: 'sdiv', exDate: r.StockExDividendTradingDate, payDate: '', perShare: Math.round(stock * 1e6) / 1e6, year: r.year || '' });
+    });
+    splits.forEach((r) => {
+      if (r.before_price > 0 && r.after_price > 0 && r.date) {
+        const ratio = Math.round((r.before_price / r.after_price) * 100) / 100;
+        out.push({ kind: 'split', exDate: r.date, payDate: '', ratio, label: r.type || '分割' });
+      }
+    });
+    // 同一天同類型可能有重複公告，去重
+    const seen = {};
+    return out.filter((e) => { const k = e.kind + e.exDate; if (seen[k]) return false; seen[k] = 1; return true; })
+      .sort((a, b) => (a.exDate < b.exDate ? -1 : 1));
+  }
+
+  /** 股票代號 → 名稱／市場別。整份清單快取 7 天（公開資料，不含個人資訊） */
+  function cachedInfo() {
+    try { const j = JSON.parse(localStorage.getItem(INFO_KEY)); if (j && j.map && j.ts) return j; } catch (e) { /* ignore */ }
+    return null;
+  }
+  async function fetchInfo(force) {
+    const c = cachedInfo();
+    if (c && !force && Date.now() - c.ts < 7 * DAY) return c.map;
+    const rows = await fm({ dataset: 'TaiwanStockInfo' }, 20000);
+    const map = {};
+    rows.forEach((r) => {
+      if (!r.stock_id || r.type === 'emerging' && map[r.stock_id]) return;
+      if (/^(Index|大盤|所有證券)$/.test(r.industry_category)) return;
+      const prev = map[r.stock_id];
+      if (!prev) map[r.stock_id] = [r.stock_name, r.type, r.industry_category];
+    });
+    try { localStorage.setItem(INFO_KEY, JSON.stringify({ ts: Date.now(), map })); } catch (e) { /* ignore */ }
+    return map;
+  }
+
+  return { setToken, fetchQuotes, fetchDailyCloses, fetchCorpActions, fetchInfo, cachedInfo };
+})();
+
+return { Engine, Market };
+})();
+const US = (function () {
+/* ===== engine.js ===== */
+/* ------------------------------------------------------------------
+ * Engine：交易流水 → 持股 / 成本 / 損益（純函式，無 DOM、無網路）
+ * 金額一律為美元；數量一律為「股」。
+ * 交易類型：
+ *   buy   買入：qty 股 × price，fee 手續費
+ *   sell  賣出：qty 股 × price，fee 手續費，tax 其他費用（SEC／TAF 等）
+ *   div   現金股利：qty = 參與配息股數，price = 每股配息，fee = 預扣稅等扣款
+ *   sdiv  股票股利（配股）：qty = 配發股數，fee = 扣款；總成本不變
+ *   split 分割／合併：qty = 換股比例（新股數 ÷ 舊股數），price = 每股（舊股）退還現金
+ * ------------------------------------------------------------------ */
+const Engine = (function () {
+  const EPS = 1e-9;
+  // 同一時間：公司行動（分割、配股）先套用，再處理買入、配息，最後才是賣出；最後以 id 穩定排序
+  const TYPE_ORDER = { split: 0, sdiv: 1, buy: 2, div: 3, sell: 4 };
+  const TYPES = ['buy', 'sell', 'div', 'sdiv', 'split'];
+
+  function sortTx(txs) {
+    return txs.slice().sort((a, b) => {
+      if (a.ts !== b.ts) return a.ts - b.ts;
+      const ta = TYPE_ORDER[a.type] == null ? 9 : TYPE_ORDER[a.type];
+      const tb = TYPE_ORDER[b.type] == null ? 9 : TYPE_ORDER[b.type];
+      if (ta !== tb) return ta - tb;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    });
+  }
+
+  /** 只有買賣才是「市場成交價」；股利、分割的 price 欄位意義不同 */
+  function isTrade(t) { return t.type === 'buy' || t.type === 'sell'; }
+
+  function newPos(asset) {
+    return {
+      asset, qty: 0, cost: 0, lots: [],
+      realized: 0, boughtQty: 0, boughtCost: 0, soldQty: 0, soldProceeds: 0,
+      fees: 0, taxes: 0, dividends: 0, returned: 0,
+      firstTs: null, lastPrice: null,
+    };
+  }
+
+  /** 股數改變但總成本不變（配股、分割）：FIFO 各批依比例放大股數、攤低單價 */
+  function scaleLots(p, factor) {
+    if (!(factor > 0)) return;
+    p.lots.forEach((l) => { l.qty *= factor; l.unit /= factor; });
+  }
+
+  /**
+   * 依序重播交易。
+   * opts.method: 'avg'（加權平均）| 'fifo'
+   * opts.upTo:   只計算到此時間戳（含）
+   */
+  function replay(txs, opts) {
+    opts = opts || {};
+    const method = opts.method === 'fifo' ? 'fifo' : 'avg';
+    const upTo = opts.upTo == null ? Infinity : opts.upTo;
+    const positions = {};
+    const events = {};
+    const issues = [];
+
+    for (const tx of sortTx(txs)) {
+      if (tx.ts > upTo) break;
+      const fee = tx.fee || 0;
+      const tax = tx.tax || 0;
+      const p = positions[tx.asset] || (positions[tx.asset] = newPos(tx.asset));
+
+      if (tx.type === 'buy') {
+        if (p.firstTs == null) p.firstTs = tx.ts;
+        p.lastPrice = tx.price;
+        const total = tx.qty * tx.price + fee;
+        p.fees += fee;
+        p.qty += tx.qty;
+        p.cost += total;
+        p.boughtQty += tx.qty;
+        p.boughtCost += total;
+        if (method === 'fifo') p.lots.push({ qty: tx.qty, unit: total / tx.qty });
+        events[tx.id] = { type: 'buy', total };
+      } else if (tx.type === 'sell') {
+        p.lastPrice = tx.price;
+        p.fees += fee;
+        p.taxes += tax;
+        let q = tx.qty;
+        if (q > p.qty + EPS * Math.max(1, p.qty)) {
+          issues.push({ id: tx.id, kind: 'oversell', asset: tx.asset, short: q - p.qty });
+          q = Math.max(p.qty, 0);
+        }
+        let costOut = 0;
+        if (q > 0) {
+          if (method === 'avg') {
+            costOut = p.qty > 0 ? p.cost * (q / p.qty) : 0;
+          } else {
+            let need = q;
+            while (need > EPS && p.lots.length) {
+              const lot = p.lots[0];
+              const take = Math.min(lot.qty, need);
+              costOut += take * lot.unit;
+              lot.qty -= take;
+              need -= take;
+              if (lot.qty <= EPS) p.lots.shift();
+            }
+          }
+        }
+        const proceeds = q * tx.price - fee - tax;
+        const pnl = proceeds - costOut;
+        p.qty -= q;
+        p.cost -= costOut;
+        p.realized += pnl;
+        p.soldQty += q;
+        p.soldProceeds += proceeds;
+        events[tx.id] = { type: 'sell', proceeds, costOut, pnl, qty: q };
+      } else if (tx.type === 'div') {
+        const cash = tx.qty * tx.price - fee;
+        p.realized += cash;
+        p.dividends += cash;
+        events[tx.id] = { type: 'div', cash, pnl: cash };
+      } else if (tx.type === 'sdiv') {
+        if (p.qty <= EPS) issues.push({ id: tx.id, kind: 'nopos', asset: tx.asset });
+        const before = p.qty;
+        p.qty += tx.qty;
+        if (method === 'fifo') {
+          if (before > EPS) scaleLots(p, p.qty / before);
+          else p.lots.push({ qty: tx.qty, unit: 0 });
+        }
+        if (fee) { p.realized -= fee; p.dividends -= fee; }
+        events[tx.id] = { type: 'sdiv', qty: tx.qty, pnl: fee ? -fee : 0 };
+      } else if (tx.type === 'split') {
+        const ratio = tx.qty;
+        const before = p.qty;
+        if (before <= EPS) {
+          issues.push({ id: tx.id, kind: 'nopos', asset: tx.asset });
+          events[tx.id] = { type: 'split', before: 0, after: 0, cash: 0, pnl: 0 };
+        } else {
+          let after = before * ratio;
+          // 反向分割／合併：不足一股的零股以現金發還，這裡直接捨去（金額很小，可另用「退還現金」補記）
+          if (Math.abs(before - Math.round(before)) < EPS) after = Math.floor(after + 1e-6);
+          const cash = Math.max(0, before * (tx.price || 0) - fee);
+          const costBefore = p.cost;
+          p.qty = after;
+          if (method === 'fifo') scaleLots(p, after / before);
+          // 退還的現金視為「拿回本金」：先沖減成本，超過成本的部分才算已實現獲利
+          let gain = 0;
+          if (cash > 0) {
+            const back = Math.min(cash, costBefore);
+            gain = cash - back;
+            p.cost -= back;
+            if (method === 'fifo' && costBefore > 0) {
+              const k = p.cost / costBefore;
+              p.lots.forEach((l) => { l.unit *= k; });
+            }
+            p.returned += cash;
+            p.realized += gain;
+          }
+          events[tx.id] = { type: 'split', before, after, cash, pnl: gain };
+        }
+      }
+
+      if (p.qty < 1e-9) { p.qty = 0; p.cost = 0; p.lots = []; }
+    }
+
+    for (const a in positions) {
+      const p = positions[a];
+      p.avgCost = p.qty > 0 ? p.cost / p.qty : 0;
+    }
+    return { positions, events, issues };
+  }
+
+  /**
+   * 以價格表估值。priceOf(asset) → { price, pct, src, date } | null
+   * 無報價的持股 value = null，不計入市值，但會回報在 missing。
+   */
+  function summarize(result, priceOf) {
+    const rows = [];
+    const missing = [];
+    let value = 0, cost = 0, dayChange = 0, realized = 0, bought = 0, fees = 0, taxes = 0, dividends = 0;
+    for (const a in result.positions) {
+      const p = result.positions[a];
+      realized += p.realized;
+      bought += p.boughtCost;
+      fees += p.fees;
+      taxes += p.taxes;
+      dividends += p.dividends;
+      if (p.qty <= 0) continue;
+      const q = priceOf(a);
+      const row = {
+        asset: a, qty: p.qty, cost: p.cost, avgCost: p.avgCost, realized: p.realized,
+        bought: p.boughtCost, sold: p.soldProceeds + p.returned, dividends: p.dividends,
+        price: q ? q.price : null, pct: q && q.pct != null ? q.pct : null, src: q ? q.src : null, date: q ? q.date : null,
+        value: null, unrealized: null, unrealizedPct: null,
+      };
+      if (q) {
+        row.value = p.qty * q.price;
+        row.unrealized = row.value - p.cost;
+        row.unrealizedPct = p.cost > 0 ? row.unrealized / p.cost : null;
+        value += row.value;
+        cost += p.cost;
+        if (q.pct != null && q.pct > -100) {
+          const prev = q.price / (1 + q.pct / 100);
+          dayChange += p.qty * (q.price - prev);
+        }
+      } else {
+        missing.push(a);
+      }
+      rows.push(row);
+    }
+    rows.sort((x, y) => (y.value || 0) - (x.value || 0));
+    for (const r of rows) r.share = r.value != null && value > 0 ? r.value / value : null;
+    const unrealized = value - cost;
+    return {
+      rows, missing, value, cost, unrealized,
+      unrealizedPct: cost > 0 ? unrealized / cost : null,
+      realized, bought, fees, taxes, dividends,
+      total: unrealized + realized,
+      totalPct: bought > 0 ? (unrealized + realized) / bought : null,
+      dayChange,
+      dayChangePct: value - dayChange > 0 ? dayChange / (value - dayChange) : null,
+    };
+  }
+
+  /**
+   * 各股「成本 / 盈虧」直條資料（以現金流計算，與成本算法無關）。
+   *   尚未取回的成本 net = 累計買入（含手續費）− 賣出回收（已扣費稅）− 退還現金 − 累計現金股利
+   *   net > 0：未回本
+   *     市值 ≥ net → white = net（成本），profit = 市值 − net
+   *     市值 <  net → white = 市值，loss = net − 市值
+   *   net ≤ 0：已取回全部成本 → 只留 profit = 目前市值（白色成本消失）
+   * pnl = 市值 − net = 已實現（含股利）+ 未實現（總損益）。
+   */
+  function assetBars(rows, opts) {
+    opts = opts || {};
+    const sortBy = opts.sortBy === 'amount' ? 'amount' : 'pct';
+    const dir = opts.dir === 'asc' ? 'asc' : 'desc';
+    const mul = dir === 'asc' ? -1 : 1;
+    const out = [];
+    for (const r of rows) {
+      if (r.value == null) continue;
+      const divs = r.dividends || 0;
+      const net = r.bought - r.sold - divs;
+      const recovered = net <= EPS * Math.max(1, r.bought);
+      let white = 0, profit = 0, loss = 0;
+      if (recovered) profit = r.value;
+      else if (r.value >= net) { white = net; profit = r.value - net; }
+      else { white = r.value; loss = net - r.value; }
+      out.push({
+        asset: r.asset, bought: r.bought, sold: r.sold, dividends: divs, net, recovered, value: r.value,
+        white, profit, loss, height: white + profit + loss,
+        pnl: r.value - net, pct: r.bought > EPS ? (r.value - net) / r.bought : null,
+      });
+    }
+    // 依報酬率或金額排序；沒有成本可比的（例如全部來自配股）永遠排最後
+    return out.sort((a, b) => {
+      const av = sortBy === 'amount' ? a.pnl : a.pct;
+      const bv = sortBy === 'amount' ? b.pnl : b.pct;
+      if (sortBy === 'pct') {
+        if (a.pct == null && b.pct == null) return b.height - a.height;
+        if (a.pct == null) return 1;
+        if (b.pct == null) return -1;
+      }
+      return mul * (bv - av);
+    });
+  }
+
+  /**
+   * 單一方向（獲利或虧損）的門檻跨越狀態機。
+   * tiers：由小到大排序的門檻（百分比數字，例如 [50,100]）。
+   * pctAbs：目前幅度（百分比，非負）。
+   * prevIdx：目前已觸發到的最高門檻索引（-1 = 尚未觸發任何一階）。
+   * hysteresis：回落多少個百分點以下才允許同一階重新觸發。
+   */
+  function tierState(pctAbs, tiers, prevIdx, hysteresis) {
+    hysteresis = hysteresis || 0;
+    let idx = prevIdx == null ? -1 : prevIdx;
+    if (idx >= tiers.length) idx = tiers.length - 1;
+    const crossed = [];
+    while (idx >= 0 && pctAbs < tiers[idx] - hysteresis) idx--;
+    while (idx + 1 < tiers.length && pctAbs >= tiers[idx + 1]) { idx++; crossed.push(tiers[idx]); }
+    return { idx, crossed };
+  }
+
+  function checkAlerts(bars, cfg, state) {
+    cfg = cfg || {};
+    const profitTiers = Array.isArray(cfg.profitTiers) ? cfg.profitTiers : [];
+    const lossTiers = Array.isArray(cfg.lossTiers) ? cfg.lossTiers : [];
+    const hysteresis = cfg.hysteresis || 0;
+    state = state || {};
+    const nextState = {};
+    const events = [];
+    for (const b of bars) {
+      if (b.pct == null) continue;
+      const prev = state[b.asset] || { profitIdx: -1, lossIdx: -1 };
+      const pctPt = b.pct * 100;
+      const pr = tierState(pctPt, profitTiers, prev.profitIdx, hysteresis);
+      const lossAbs = pctPt < 0 ? -pctPt : 0;
+      const lo = tierState(lossAbs, lossTiers, prev.lossIdx, hysteresis);
+      nextState[b.asset] = { profitIdx: pr.idx, lossIdx: lo.idx };
+      pr.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'profit', tier: t }));
+      lo.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'loss', tier: t }));
+    }
+    return { state: nextState, events };
+  }
+
+  /** 找到某股在 ts（含）之前最後一筆「買賣」成交價；找不到回傳 null */
+  function lastTradePrice(sortedByAsset, asset, ts) {
+    const arr = sortedByAsset[asset];
+    if (!arr) return null;
+    let out = null;
+    for (const t of arr) { if (t.ts <= ts) { if (isTrade(t)) out = t.price; } else break; }
+    return out;
+  }
+
+  /**
+   * 每日淨值曲線。
+   * days: 各日「收盤時間戳」陣列（升冪）；最後一點另以 nowTs + priceNow 計算。
+   * priceAt(asset, dayEndTs) → 該日（或之前最近一個交易日）收盤價 | null；null 時退回最近成交價。
+   * priceNow(asset) → 目前價格 | null
+   */
+  function netWorthSeries(txs, o) {
+    const sorted = sortTx(txs);
+    const byAsset = {};
+    for (const t of sorted) (byAsset[t.asset] || (byAsset[t.asset] = [])).push(t);
+    const pts = [];
+
+    function point(ts, priceFn) {
+      const r = replay(sorted, { method: o.method, upTo: ts });
+      let value = 0, cost = 0;
+      for (const a in r.positions) {
+        const p = r.positions[a];
+        if (p.qty <= 0) continue;
+        let px = priceFn(a);
+        if (px == null) px = lastTradePrice(byAsset, a, ts);
+        if (px == null) continue;
+        value += p.qty * px;
+        cost += p.cost;
+      }
+      return { ts, value, cost };
+    }
+
+    for (const dayEnd of o.days) {
+      if (dayEnd >= o.nowTs) continue;
+      if (dayEnd < sorted[0].ts) continue;
+      pts.push(point(dayEnd, (a) => o.priceAt(a, dayEnd)));
+    }
+    pts.push(point(o.nowTs, (a) => o.priceNow(a)));
+    return pts;
+  }
+
+  /** 某時間點（不含）之前的持股數 */
+  function qtyBefore(txs, asset, ts) {
+    const r = replay(txs.filter((t) => t.asset === asset), { method: 'avg', upTo: ts - 1 });
+    const p = r.positions[asset];
+    return p ? p.qty : 0;
+  }
+
+  return { EPS, TYPES, sortTx, isTrade, replay, summarize, assetBars, tierState, checkAlerts, netWorthSeries, lastTradePrice, qtyBefore };
+})();
+
+/* ===== market.js ===== */
+/* ------------------------------------------------------------------
+ * Market：美股行情與美元匯率（FinMind 公開資料 API）
+ *   - 報價：每日收盤價（盤中為最近一個交易日的收盤；不是即時成交價）
+ *   - 歷史：日收盤價（未還原權息，搭配帳本裡的分割紀錄即可正確估值）
+ *   - 匯率：臺灣銀行美元即期匯率（買入與賣出的中間價），用來換算台幣
+ * ------------------------------------------------------------------ */
+const MKT_OFFSET = -5 * 3600000; // 美東標準時間（UTC−5）；只用來切「交易日」，夏令時間差一小時不影響
+const DAY = 86400000;
+/** 美東日期的 00:00（毫秒時間戳） */
+function mktDayStart(ts) { return Math.floor((ts + MKT_OFFSET) / DAY) * DAY - MKT_OFFSET; }
+/** 時間戳 → 美東日期字串 YYYY-MM-DD */
+function mktDateStr(ts) {
+  const d = new Date(ts + MKT_OFFSET);
+  return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
+}
+/** YYYY-MM-DD（美東日期）→ 當天 00:00 的時間戳 */
+function mktDateTs(str) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(str || '');
+  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) - MKT_OFFSET : null;
+}
+/** 台灣時間的星期（0=日） */
+function mktWeekday(ts) { return new Date(ts + MKT_OFFSET).getUTCDay(); }
+/** 是否在台股交易時段附近（週一至五 08:55–14:35，台灣時間；不含國定假日判斷） */
+function mktOpen(ts) {
+  const wd = mktWeekday(ts);
+  if (wd === 0 || wd === 6) return false;
+  const min = Math.floor(((ts + MKT_OFFSET) % DAY) / 60000);
+  return min >= 505 && min <= 970; // 涵蓋夏令與冬令的 09:30–16:00（美東）
+}
+
+const Market = (function () {
+  const FM = 'https://api.finmindtrade.com/api/v4/data';
+  const INFO_KEY = 'usstockledger.info.v1';
+  let token = '';
+
+  function setToken(t) { token = (t || '').trim(); }
+
+  async function fetchWithTimeout(url, ms) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), ms || 12000);
+    try { return await fetch(url, { signal: ctl.signal, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' }); }
+    finally { clearTimeout(timer); }
+  }
+
+  async function fm(params, ms) {
+    const p = Object.assign({}, params);
+    if (token) p.token = token;
+    const res = await fetchWithTimeout(FM + '?' + new URLSearchParams(p).toString(), ms);
+    let j = null;
+    try { j = await res.json(); } catch (e) { /* ignore */ }
+    const st = j && j.status != null ? j.status : res.status;
+    if (!res.ok || st !== 200) {
+      const e = new Error((j && j.msg) || ('HTTP ' + res.status));
+      e.status = st === 200 ? res.status : st;
+      e.src = 'FinMind';
+      throw e;
+    }
+    return Array.isArray(j.data) ? j.data : [];
+  }
+
+  /** 同時最多 n 個請求 */
+  async function pool(items, n, fn) {
+    const out = [];
+    let i = 0;
+    async function worker() { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } }
+    await Promise.all(Array.from({ length: Math.min(n, items.length) }, worker));
+    return out;
+  }
+
+  /** FinMind 美股欄位是大寫開頭（Close），保留小寫相容 */
+  function closeOf(r) { const c = r.Close != null ? +r.Close : +r.close; return c > 0 ? c : 0; }
+
+  /**
+   * 取得多檔股票的最新收盤價與漲跌幅（相對前一交易日）。
+   * 回傳 { prices: {code: {price, pct, date}}, unknown: [...], limited: bool }
+   */
+  async function fetchQuotes(codes) {
+    const prices = {};
+    const unknown = [];
+    let limited = false, netErr = null;
+    const start = mktDateStr(Date.now() - 20 * DAY);
+    await pool(codes, 4, async (c) => {
+      if (limited) return;
+      try {
+        const rows = (await fm({ dataset: 'USStockPrice', data_id: c, start_date: start })).filter((r) => closeOf(r) > 0);
+        if (rows.length) {
+          const last = rows[rows.length - 1], prev = rows[rows.length - 2];
+          prices[c] = { price: closeOf(last), pct: prev ? (closeOf(last) / closeOf(prev) - 1) * 100 : null, date: last.date, src: 'FinMind' };
+        } else unknown.push(c);
+      } catch (e) {
+        if (e.status === 402 || e.status === 429) limited = true;
+        else netErr = e;
+      }
+    });
+    if (!Object.keys(prices).length && codes.length && (netErr || limited)) {
+      const e = netErr || new Error('RATE');
+      if (limited) e.status = 402;
+      throw e;
+    }
+    const missing = codes.filter((c) => !prices[c] && unknown.indexOf(c) < 0);
+    return { prices, unknown, missing, limited };
+  }
+
+  /** 日收盤（美東日期）。回傳 [{day, close}]，day 為美東當日 00:00 的時間戳，升冪 */
+  async function fetchDailyCloses(code, startTs) {
+    const rows = await fm({ dataset: 'USStockPrice', data_id: code, start_date: mktDateStr(startTs) }, 20000);
+    return rows.map((r) => ({ day: mktDateTs(r.date), close: closeOf(r) })).filter((r) => r.close > 0)
+      .filter((r) => r.day != null).sort((a, b) => a.day - b.day);
+  }
+
+  /**
+   * 除權息與分割事件：FinMind 沒有美股的股利／分割資料，所以美股版不提供「可能漏記」提示。
+   */
+  async function fetchCorpActions() { return []; }
+
+  /**
+   * 美元兌台幣日匯率（臺灣銀行牌告，取即期買入與賣出的中間價）。
+   * 回傳 [{day, date, rate}]，day 為台灣當日 00:00 的時間戳，升冪
+   */
+  async function fetchFx(startTs) {
+    const d = new Date(startTs + 8 * 3600000);
+    const start = d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
+    const rows = await fm({ dataset: 'TaiwanExchangeRate', data_id: 'USD', start_date: start }, 20000);
+    const out = [];
+    rows.forEach((r) => {
+      const b = +r.spot_buy, s2 = +r.spot_sell, cb = +r.cash_buy, cs = +r.cash_sell;
+      let rate = b > 0 && s2 > 0 ? (b + s2) / 2 : (cb > 0 && cs > 0 ? (cb + cs) / 2 : (s2 > 0 ? s2 : b > 0 ? b : 0));
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(r.date || '');
+      if (!(rate > 0) || !m) return;
+      rate = Math.round(rate * 10000) / 10000;
+      out.push({ day: Date.UTC(+m[1], +m[2] - 1, +m[3]) - 8 * 3600000, date: m[0], rate });
+    });
+    return out.sort((a, b) => a.day - b.day);
+  }
+
+  /** 股票代號 → 名稱／市場別。整份清單快取 7 天（公開資料，不含個人資訊） */
+  function cachedInfo() {
+    try { const j = JSON.parse(localStorage.getItem(INFO_KEY)); if (j && j.map && j.ts) return j; } catch (e) { /* ignore */ }
+    return null;
+  }
+  async function fetchInfo(force) {
+    const c = cachedInfo();
+    if (c && !force && Date.now() - c.ts < 7 * DAY) return c.map;
+    const rows = await fm({ dataset: 'USStockInfo' }, 30000);
+    const map = {};
+    rows.forEach((r) => {
+      const id = String(r.stock_id || '').toUpperCase();
+      if (!id || map[id]) return;
+      map[id] = [String(r.stock_name || '').slice(0, 60)];
+    });
+    try { localStorage.setItem(INFO_KEY, JSON.stringify({ ts: Date.now(), map })); } catch (e) { /* ignore */ }
+    return map;
+  }
+
+  return { setToken, fetchQuotes, fetchDailyCloses, fetchCorpActions, fetchFx, fetchInfo, cachedInfo };
+})();
+
+return { Engine, Market };
+})();
+const CR = (function () {
+/* ===== engine.js ===== */
+/* ------------------------------------------------------------------
+ * Engine：交易流水 → 持倉 / 成本 / 損益（純函式，無 DOM、無網路）
+ * 所有金額單位由呼叫端決定（USDT 或 TWD），引擎只負責算術。
+ * ------------------------------------------------------------------ */
+const Engine = (function () {
+  const EPS = 1e-9;
+
+  // 同一時間戳：買入排在賣出前面，避免同秒成交被誤判為超賣；最後以 id 穩定排序
+  function sortTx(txs) {
+    return txs.slice().sort((a, b) => {
+      if (a.ts !== b.ts) return a.ts - b.ts;
+      if (a.type !== b.type) return a.type === 'buy' ? -1 : 1;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    });
+  }
+
+  function newPos(asset) {
+    return {
+      asset, qty: 0, cost: 0, lots: [],
+      realized: 0, boughtQty: 0, boughtCost: 0, soldQty: 0, soldProceeds: 0, fees: 0,
+      firstTs: null, lastPrice: null,
+    };
+  }
+
+  /**
+   * 依序重播交易。
+   * opts.method: 'avg'（加權平均）| 'fifo'
+   * opts.upTo:   只計算到此時間戳（含）
+   * opts.fxOf:   (tx) => 匯率，把 tx 的價格/手續費換成目標幣別（預設 1）
+   */
+  function replay(txs, opts) {
+    opts = opts || {};
+    const method = opts.method === 'fifo' ? 'fifo' : 'avg';
+    const upTo = opts.upTo == null ? Infinity : opts.upTo;
+    const fxOf = opts.fxOf || (() => 1);
+    const positions = {};
+    const events = {};
+    const issues = [];
+
+    for (const tx of sortTx(txs)) {
+      if (tx.ts > upTo) break;
+      const fx = fxOf(tx);
+      const price = tx.price * fx;
+      const fee = (tx.fee || 0) * fx;
+      const p = positions[tx.asset] || (positions[tx.asset] = newPos(tx.asset));
+      if (p.firstTs == null) p.firstTs = tx.ts;
+      p.lastPrice = price;
+      p.fees += fee;
+
+      if (tx.type === 'buy') {
+        const total = tx.qty * price + fee;
+        p.qty += tx.qty;
+        p.cost += total;
+        p.boughtQty += tx.qty;
+        p.boughtCost += total;
+        if (method === 'fifo') p.lots.push({ qty: tx.qty, unit: total / tx.qty });
+        events[tx.id] = { type: 'buy', total };
+      } else {
+        let q = tx.qty;
+        if (q > p.qty + EPS * Math.max(1, p.qty)) {
+          issues.push({ id: tx.id, kind: 'oversell', asset: tx.asset, short: q - p.qty });
+          q = Math.max(p.qty, 0);
+        }
+        let costOut = 0;
+        if (q > 0) {
+          if (method === 'avg') {
+            costOut = p.qty > 0 ? p.cost * (q / p.qty) : 0;
+          } else {
+            let need = q;
+            while (need > EPS && p.lots.length) {
+              const lot = p.lots[0];
+              const take = Math.min(lot.qty, need);
+              costOut += take * lot.unit;
+              lot.qty -= take;
+              need -= take;
+              if (lot.qty <= EPS) p.lots.shift();
+            }
+          }
+        }
+        const proceeds = q * price - fee;
+        const pnl = proceeds - costOut;
+        p.qty -= q;
+        p.cost -= costOut;
+        p.realized += pnl;
+        p.soldQty += q;
+        p.soldProceeds += proceeds;
+        events[tx.id] = { type: 'sell', proceeds, costOut, pnl, qty: q };
+      }
+
+      if (p.qty < 1e-12) { p.qty = 0; p.cost = 0; p.lots = []; }
+    }
+
+    for (const a in positions) {
+      const p = positions[a];
+      p.avgCost = p.qty > 0 ? p.cost / p.qty : 0;
+    }
+    return { positions, events, issues };
+  }
+
+  /**
+   * 以價格表估值。priceOf(asset) → { price, pct } | null（同一幣別單位）
+   * 無報價的持倉 value = null，不計入市值，但會回報在 missing。
+   */
+  function summarize(result, priceOf) {
+    const rows = [];
+    const missing = [];
+    let value = 0, cost = 0, dayChange = 0, realized = 0, bought = 0, fees = 0;
+    for (const a in result.positions) {
+      const p = result.positions[a];
+      realized += p.realized;
+      bought += p.boughtCost;
+      fees += p.fees;
+      if (p.qty <= 0) continue;
+      const q = priceOf(a);
+      const row = {
+        asset: a, qty: p.qty, cost: p.cost, avgCost: p.avgCost, realized: p.realized,
+        bought: p.boughtCost, sold: p.soldProceeds,
+        price: q ? q.price : null, pct: q && q.pct != null ? q.pct : null, src: q ? q.src : null,
+        value: null, unrealized: null, unrealizedPct: null,
+      };
+      if (q) {
+        row.value = p.qty * q.price;
+        row.unrealized = row.value - p.cost;
+        row.unrealizedPct = p.cost > 0 ? row.unrealized / p.cost : null;
+        value += row.value;
+        cost += p.cost;
+        if (q.pct != null && q.pct > -100) {
+          const prev = q.price / (1 + q.pct / 100);
+          dayChange += p.qty * (q.price - prev);
+        }
+      } else {
+        missing.push(a);
+      }
+      rows.push(row);
+    }
+    rows.sort((x, y) => (y.value || 0) - (x.value || 0));
+    for (const r of rows) r.share = r.value != null && value > 0 ? r.value / value : null;
+    const unrealized = value - cost;
+    return {
+      rows, missing, value, cost, unrealized,
+      unrealizedPct: cost > 0 ? unrealized / cost : null,
+      realized, bought, fees,
+      total: unrealized + realized,
+      totalPct: bought > 0 ? (unrealized + realized) / bought : null,
+      dayChange,
+      dayChangePct: value - dayChange > 0 ? dayChange / (value - dayChange) : null,
+    };
+  }
+
+  /**
+   * 各幣種「成本 / 盈虧」直條資料（以現金流計算，與成本算法無關）。
+   *   尚未取回的成本 net = 累計買入（含手續費）− 累計賣出回收（已扣手續費）
+   *   net > 0：未回本
+   *     市值 ≥ net → white = net（成本），profit = 市值 − net
+   *     市值 <  net → white = 市值，loss = net − 市值
+   *   net ≤ 0：已取回全部成本 → 只留 profit = 目前市值（白色成本消失）
+   * pnl = 市值 − net = 已實現 + 未實現（總損益）。
+   */
+  function assetBars(rows, opts) {
+    opts = opts || {};
+    const sortBy = opts.sortBy === 'amount' ? 'amount' : 'pct';
+    const dir = opts.dir === 'asc' ? 'asc' : 'desc';
+    const mul = dir === 'asc' ? -1 : 1;
+    const out = [];
+    for (const r of rows) {
+      if (r.value == null) continue;
+      const net = r.bought - r.sold;
+      const recovered = net <= EPS * Math.max(1, r.bought);
+      let white = 0, profit = 0, loss = 0;
+      if (recovered) profit = r.value;
+      else if (r.value >= net) { white = net; profit = r.value - net; }
+      else { white = r.value; loss = net - r.value; }
+      out.push({
+        asset: r.asset, bought: r.bought, sold: r.sold, net, recovered, value: r.value,
+        white, profit, loss, height: white + profit + loss,
+        pnl: r.value - net, pct: r.bought > EPS ? (r.value - net) / r.bought : null,
+      });
+    }
+    // 依報酬率（未實現＋已實現的總報酬 ÷ 累計買入成本）或金額（總損益）排序，方向可指定；
+    // 沒有成本可比的（例如空投）永遠排最後，跟排序方向無關
+    return out.sort((a, b) => {
+      const av = sortBy === 'amount' ? a.pnl : a.pct;
+      const bv = sortBy === 'amount' ? b.pnl : b.pct;
+      if (sortBy === 'pct') {
+        if (a.pct == null && b.pct == null) return b.height - a.height;
+        if (a.pct == null) return 1;
+        if (b.pct == null) return -1;
+      }
+      return mul * (bv - av);
+    });
+  }
+
+  /**
+   * 單一方向（獲利或虧損）的門檻跨越狀態機。
+   * tiers：由小到大排序的門檻（百分比數字，例如 [50,100]）。
+   * pctAbs：目前幅度（百分比，非負；跨方向的判斷交給呼叫端，這裡只管「有沒有超過門檻」）。
+   * prevIdx：目前已觸發到的最高門檻索引（-1 = 尚未觸發任何一階）。
+   * hysteresis：回落多少個百分點以下才允許同一階重新觸發（避免在門檻邊界來回抖動狂發訊號）。
+   * 回傳 { idx, crossed }：crossed 是這次新跨過（由低到高）的門檻值陣列。
+   */
+  function tierState(pctAbs, tiers, prevIdx, hysteresis) {
+    hysteresis = hysteresis || 0;
+    let idx = prevIdx == null ? -1 : prevIdx;
+    if (idx >= tiers.length) idx = tiers.length - 1;
+    const crossed = [];
+    while (idx >= 0 && pctAbs < tiers[idx] - hysteresis) idx--;
+    while (idx + 1 < tiers.length && pctAbs >= tiers[idx + 1]) { idx++; crossed.push(tiers[idx]); }
+    return { idx, crossed };
+  }
+
+  /**
+   * 依目前各幣種報酬率（bars 的 pct，來自 assetBars）比對使用者設定的獲利/虧損門檻，
+   * 找出「這次新跨過」的門檻，並回傳更新後的每幣種跨越狀態（給下次呼叫延續使用，做遲滯判斷）。
+   * cfg: { profitTiers:[...], lossTiers:[...], hysteresis }
+   * state: 上次的 { [asset]: { profitIdx, lossIdx } }（可為 null/{}）
+   */
+  function checkAlerts(bars, cfg, state) {
+    cfg = cfg || {};
+    const profitTiers = Array.isArray(cfg.profitTiers) ? cfg.profitTiers : [];
+    const lossTiers = Array.isArray(cfg.lossTiers) ? cfg.lossTiers : [];
+    const hysteresis = cfg.hysteresis || 0;
+    state = state || {};
+    const nextState = {};
+    const events = [];
+    for (const b of bars) {
+      if (b.pct == null) continue;
+      const prev = state[b.asset] || { profitIdx: -1, lossIdx: -1 };
+      const pctPt = b.pct * 100;
+      const pr = tierState(pctPt, profitTiers, prev.profitIdx, hysteresis);
+      const lossAbs = pctPt < 0 ? -pctPt : 0;
+      const lo = tierState(lossAbs, lossTiers, prev.lossIdx, hysteresis);
+      nextState[b.asset] = { profitIdx: pr.idx, lossIdx: lo.idx };
+      pr.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'profit', tier: t }));
+      lo.crossed.forEach((t) => events.push({ asset: b.asset, kind: 'loss', tier: t }));
+    }
+    return { state: nextState, events };
+  }
+
+  /** 找到某幣種在 ts（含）之前最後一筆成交價；找不到回傳 null */
+  function lastTradePrice(sortedByAsset, asset, ts) {
+    const arr = sortedByAsset[asset];
+    if (!arr) return null;
+    let out = null;
+    for (const t of arr) { if (t.ts <= ts) out = t.price; else break; }
+    return out;
+  }
+
+  /**
+   * 每日淨值曲線。
+   * days: 各日「收盤時間戳」陣列（升冪）；最後一點另以 nowTs + priceNow 計算。
+   * priceAt(asset, dayEndTs) → 該日收盤價 | null；null 時退回最近成交價。
+   * priceNow(asset) → 目前價格 | null
+   */
+  function netWorthSeries(txs, o) {
+    const sorted = sortTx(txs);
+    const byAsset = {};
+    for (const t of sorted) (byAsset[t.asset] || (byAsset[t.asset] = [])).push(t);
+    const fxOf = o.fxOf || (() => 1);
+    const priceFx = o.priceFx || 1; // 市場價（USDT）換算成顯示幣別的匯率
+    const pts = [];
+
+    function point(ts, priceFn) {
+      const r = replay(sorted, { method: o.method, upTo: ts, fxOf });
+      let value = 0, cost = 0;
+      for (const a in r.positions) {
+        const p = r.positions[a];
+        if (p.qty <= 0) continue;
+        let px = priceFn(a);
+        if (px == null) {
+          const tp = lastTradePrice(byAsset, a, ts);
+          px = tp; // 成交價為 USDT
+        }
+        if (px == null) continue;
+        value += p.qty * px * priceFx;
+        cost += p.cost;
+      }
+      return { ts, value, cost };
+    }
+
+    for (const dayEnd of o.days) {
+      if (dayEnd >= o.nowTs) continue;
+      if (dayEnd < sorted[0].ts) continue;
+      pts.push(point(dayEnd, (a) => o.priceAt(a, dayEnd)));
+    }
+    pts.push(point(o.nowTs, (a) => o.priceNow(a)));
+    return pts;
+  }
+
+  return { EPS, sortTx, replay, summarize, assetBars, tierState, checkAlerts, netWorthSeries, lastTradePrice };
+})();
+
+/* ===== market.js ===== */
+/* ------------------------------------------------------------------
+ * Market：幣安公開行情（不需 API Key）＋ USD/TWD 匯率
+ * ------------------------------------------------------------------ */
+const Market = (function () {
+  // 依序嘗試；data-api.binance.vision 是幣安專為「只讀行情」提供的網域
+  const BASES = [
+    'https://api.binance.com',
+    'https://data-api.binance.vision',
+    'https://api1.binance.com',
+    'https://api2.binance.com',
+    'https://api3.binance.com',
+  ];
+  const FX_URL = 'https://open.er-api.com/v6/latest/USD';
+  const FX_KEY = 'cryptoledger.fx.v1';
+  let baseIdx = 0;
+
+  async function fetchWithTimeout(url, ms) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), ms || 8000);
+    try { return await fetch(url, { signal: ctl.signal, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' }); }
+    finally { clearTimeout(timer); }
+  }
+
+  async function getJSON(path, params) {
+    const qs = new URLSearchParams(params || {}).toString();
+    let lastErr = null;
+    for (let i = 0; i < BASES.length; i++) {
+      const idx = (baseIdx + i) % BASES.length;
+      try {
+        const res = await fetchWithTimeout(BASES[idx] + path + (qs ? '?' + qs : ''));
+        if (res.ok) { baseIdx = idx; return await res.json(); }
+        if (res.status === 400) { const e = new Error('BAD_REQUEST'); e.status = 400; throw e; } // 例如無此交易對
+        lastErr = new Error('HTTP ' + res.status);
+        lastErr.status = res.status;
+      } catch (e) {
+        if (e.status === 400) throw e;
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error('NETWORK');
+  }
+
+  /** 取得多個幣種（對 USDT）的最新價與 24h 漲跌幅 */
+  async function fetchTickers(assets) {
+    const list = assets.filter((a) => a !== 'USDT');
+    const prices = {};
+    const unknown = [];
+    if (!list.length) return { prices, unknown };
+    try {
+      const arr = await getJSON('/api/v3/ticker/24hr', { symbols: JSON.stringify(list.map((a) => a + 'USDT')) });
+      for (const t of arr) prices[t.symbol.slice(0, -4)] = { price: parseFloat(t.lastPrice), pct: parseFloat(t.priceChangePercent) };
+    } catch (e) {
+      if (e.status !== 400) throw e;
+      // 其中有交易對不存在：逐一查詢，找出哪些沒有報價
+      let netErr = null;
+      await Promise.all(list.map(async (a) => {
+        try {
+          const t = await getJSON('/api/v3/ticker/24hr', { symbol: a + 'USDT' });
+          prices[a] = { price: parseFloat(t.lastPrice), pct: parseFloat(t.priceChangePercent) };
+        } catch (e2) {
+          if (e2.status === 400) unknown.push(a); else netErr = e2;
+        }
+      }));
+      if (netErr && !Object.keys(prices).length) throw netErr;
+    }
+    for (const a of list) if (!prices[a] && unknown.indexOf(a) < 0) unknown.push(a);
+    return { prices, unknown };
+  }
+
+  /** 日 K（UTC 日界）。回傳 [{open, close}]，open 為當日 00:00 UTC 的毫秒時間戳 */
+  async function fetchDailyCloses(asset, startTs) {
+    const out = [];
+    let start = startTs;
+    for (let page = 0; page < 5; page++) {
+      const arr = await getJSON('/api/v3/klines', { symbol: asset + 'USDT', interval: '1d', startTime: String(start), limit: '1000' });
+      for (const k of arr) out.push({ open: k[0], close: parseFloat(k[4]) });
+      if (arr.length < 1000) break;
+      start = arr[arr.length - 1][6] + 1;
+    }
+    return out;
+  }
+
+  function cachedFx() {
+    try { const j = JSON.parse(localStorage.getItem(FX_KEY)); if (j && j.rate > 0) return j; } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  async function fetchFx() {
+    const res = await fetchWithTimeout(FX_URL, 8000);
+    if (!res.ok) throw new Error('FX HTTP ' + res.status);
+    const j = await res.json();
+    const rate = j && j.rates && j.rates.TWD;
+    if (!(rate > 0)) throw new Error('FX BAD');
+    const out = { rate, ts: (j.time_last_update_unix ? j.time_last_update_unix * 1000 : Date.now()) };
+    try { localStorage.setItem(FX_KEY, JSON.stringify(out)); } catch (e) { /* ignore */ }
+    return out;
+  }
+
+  return { fetchTickers, fetchDailyCloses, fetchFx, cachedFx };
+})();
+
+return { Engine, Market };
+})();
+/* ===== overview.js ===== */
+/* ------------------------------------------------------------------
+ * 總資產總覽：唯讀。從 GitHub 私人 repo 讀取三個帳本的「加密同步檔」，
+ * 在瀏覽器裡解密、合計。這一頁不會寫入 GitHub，也不會改動任何帳本。
+ * GitHub Token 與同步密碼以解鎖密碼加密後存在這台裝置的瀏覽器裡。
+ * ------------------------------------------------------------------ */
+const DAY_MS = 86400000;
+const TPE = 8 * 3600000;
+const $root = document.getElementById('root');
+const VAULT_ID = 'default';
+const IDLE_MIN = 10;
+
+const LEDGERS = [
+  { id: 'tw', name: '台股', cur: 'TWD', path: 'twstock.sync.json', color: 'var(--c1)', mod: TW, kind: 'stock',
+    dayStart: (ts) => Math.floor((ts + TPE) / DAY_MS) * DAY_MS - TPE, off: TPE, weekdaysOnly: true },
+  { id: 'us', name: '美股', cur: 'USD', path: 'usstock.sync.json', color: 'var(--c3)', mod: US, kind: 'stock',
+    dayStart: (ts) => Math.floor((ts - 5 * 3600000) / DAY_MS) * DAY_MS + 5 * 3600000, off: -5 * 3600000, weekdaysOnly: true },
+  { id: 'cr', name: '加密貨幣', cur: 'USD', path: 'ledger.sync.json', color: 'var(--c4)', mod: CR, kind: 'crypto',
+    dayStart: (ts) => Math.floor(ts / DAY_MS) * DAY_MS, off: 0, weekdaysOnly: false },
+];
+const LBY = {}; LEDGERS.forEach((l) => { LBY[l.id] = l; });
+const RANGES = [['1W', '1 週', 7], ['1M', '1 個月', 30], ['3M', '3 個月', 90], ['6M', '6 個月', 180], ['1Y', '1 年', 365], ['ALL', '全部', 0]];
+
+let session = null;
+let cfg = null;
+let st = {};            // 各帳本執行狀態
+let fx = { list: [], spot: null, status: 'idle' };
+let ver = 0;            // 資料／價格版本（快取用）
+let viewCache = {};
+let loading = false, loadedAt = null;
+let twInfo = null;
+let timers = {};
+let chartHover = false;
+const el = {};
+
+function defaultCfg() {
+  const ledgers = {};
+  LEDGERS.forEach((l) => { ledgers[l.id] = { repo: '', token: '', pw: '', url: '' }; });
+  return { v: 1, cur: 'TWD', range: 'ALL', theme: 'auto', ud: 'red-up', fmToken: '', fxManual: null, ledgers };
+}
+function cleanCfg(c) {
+  const out = defaultCfg();
+  c = c || {};
+  out.cur = c.cur === 'USD' ? 'USD' : 'TWD';
+  out.range = RANGES.some((r) => r[0] === c.range) ? c.range : 'ALL';
+  out.theme = c.theme === 'light' || c.theme === 'dark' ? c.theme : 'auto';
+  out.ud = c.ud === 'green-up' ? 'green-up' : 'red-up';
+  out.fmToken = typeof c.fmToken === 'string' ? c.fmToken.trim() : '';
+  out.fxManual = c.fxManual > 0 ? +c.fxManual : null;
+  LEDGERS.forEach((l) => {
+    const s0 = (c.ledgers || {})[l.id] || {};
+    ['repo', 'token', 'pw', 'url'].forEach((k) => { out.ledgers[l.id][k] = typeof s0[k] === 'string' ? s0[k].trim() : ''; });
+  });
+  return out;
+}
+function ledgerOn(id) { const c = cfg.ledgers[id]; return !!(c.repo && c.token && c.pw); }
+function freshSt() { return { status: 'idle', error: null, txs: [], mp: {}, closes: {}, quotes: {}, failed: [], unknown: [], sess: null }; }
+function applyLook() {
+  const r = document.documentElement;
+  const th = cfg ? cfg.theme : 'auto';
+  if (th === 'light' || th === 'dark') r.setAttribute('data-theme', th); else r.removeAttribute('data-theme');
+  r.setAttribute('data-ud', (cfg && cfg.ud) || 'red-up');
+}
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach((x) => x.remove());
+  const t = h('div', { class: 'toast', role: 'status' }, msg);
+  (document.querySelector('dialog[open]') || document.body).appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+function modal(build) {
+  return new Promise((resolve) => {
+    const dlg = h('dialog', { class: 'dlg' });
+    const close = (v) => { try { dlg.close(); } catch (e) { /* ignore */ } dlg.remove(); resolve(v); };
+    dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(undefined); });
+    dlg.appendChild(h('div', { class: 'dlg-in' }, build(close)));
+    document.body.appendChild(dlg);
+    dlg.showModal();
+  });
+}
+function persist() { return Vault.save(session, cfg).catch(() => toast('儲存失敗：瀏覽器可能已禁止儲存')); }
+
+/* ---------- GitHub（唯讀） ---------- */
+function ghError(code, msg) { const e = new Error(msg); e.code = code; return e; }
+async function ghGet(c, path, accept) {
+  try {
+    return await fetch('https://api.github.com' + path, {
+      method: 'GET', cache: 'no-store',
+      headers: { Authorization: 'Bearer ' + c.token, Accept: accept || 'application/vnd.github+json' },
+    });
+  } catch (e) { throw ghError('NETWORK', '連不上 GitHub，請檢查網路連線'); }
+}
+async function ghFail(res, file) {
+  if (res.status === 401) return ghError('AUTH', 'GitHub Token 無效或已過期');
+  if (res.status === 403) return ghError('PERM', res.headers.get('x-ratelimit-remaining') === '0' ? 'GitHub 暫時限制請求次數，請稍後再試' : 'Token 權限不足（需要該 repo 的 Contents 讀取權限）');
+  if (res.status === 404) return ghError('NOTFOUND', '找不到 ' + file + '：請確認 repo 名稱、Token 權限，以及該帳本已開啟雲端同步');
+  return ghError('HTTP', 'GitHub 回應 ' + res.status);
+}
+async function fetchLedger(l, s0) {
+  const c = cfg.ledgers[l.id];
+  const m = /^([^/\s]+)\/([^/\s]+)$/.exec(c.repo.replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, ''));
+  if (!m) throw ghError('CFG', 'repo 請填「帳號/名稱」');
+  const path = '/repos/' + m[1] + '/' + m[2] + '/contents/' + l.path;
+  const res = await ghGet(c, path);
+  if (!res.ok) throw await ghFail(res, l.path);
+  const j = await res.json();
+  let text;
+  if (j.encoding === 'base64' && j.content) text = atob(String(j.content).replace(/\s/g, ''));
+  else {
+    const raw = await ghGet(c, path, 'application/vnd.github.raw+json');
+    if (!raw.ok) throw await ghFail(raw, l.path);
+    text = await raw.text();
+  }
+  let env;
+  try { env = JSON.parse(text); } catch (e) { throw ghError('FORMAT', l.path + ' 不是有效的同步檔'); }
+  let r;
+  try { r = await Vault.openAny(env, c.pw, s0.sess); }
+  catch (e) { throw ghError(e.message === 'BAD_PIN' ? 'BADPW' : 'FORMAT', e.message === 'BAD_PIN' ? '同步密碼不正確' : l.path + ' 不是有效的同步檔'); }
+  s0.sess = r.session;
+  return r.data;
+}
+function normTxs(l, list) {
+  const types = l.kind === 'stock' ? l.mod.Engine.TYPES : ['buy', 'sell'];
+  return (Array.isArray(list) ? list : []).filter((t) =>
+    t && typeof t.id === 'string' && isFinite(t.ts) && types.indexOf(t.type) >= 0 && typeof t.asset === 'string' &&
+    t.qty > 0 && isFinite(t.qty) && t.price >= 0 && isFinite(t.price)
+  ).map((t) => ({
+    id: t.id, ts: +t.ts, type: t.type, asset: t.asset.toUpperCase(), qty: +t.qty, price: +t.price,
+    fee: t.fee > 0 ? +t.fee : 0, tax: t.tax > 0 ? +t.tax : 0, fx: l.id !== 'tw' && t.fx > 0 ? +t.fx : null,
+  }));
+}
+
+/* ---------- 匯率（1 USD = ? TWD） ---------- */
+function fxAt(ts) {
+  const L = fx.list;
+  if (!L.length || ts < L[0].day) return null;
+  let lo = 0, hi = L.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (L[mid].day <= ts) lo = mid; else hi = mid - 1; }
+  return L[lo].rate;
+}
+function fxNowInfo() {
+  if (fx.list.length) { const x = fx.list[fx.list.length - 1]; return { rate: x.rate, src: '臺灣銀行 ' + x.date }; }
+  if (fx.spot > 0) return { rate: fx.spot, src: '即時參考匯率' };
+  if (cfg && cfg.fxManual > 0) return { rate: cfg.fxManual, src: '手動設定' };
+  return null;
+}
+function fxRate(ts) { const r = ts == null ? null : fxAt(ts); if (r > 0) return r; const n = fxNowInfo(); return n ? n.rate : null; }
+/** 把帳本原幣金額換成顯示幣別的乘數（ts=null 表示現在）；沒有匯率回傳 null */
+function conv(l, D, ts) {
+  if (l.cur === D) return 1;
+  const r = fxRate(ts);
+  if (!(r > 0)) return null;
+  return l.cur === 'USD' ? r : 1 / r;
+}
+
+/* ---------- 價格 ---------- */
+function tradeTx(l, t) { return l.kind === 'crypto' || t.type === 'buy' || t.type === 'sell'; }
+function priceNow(l, a) {
+  const s0 = st[l.id];
+  if (l.kind === 'crypto' && a === 'USDT') return { price: 1, pct: 0, src: 'live' };
+  const q = s0.quotes[a];
+  if (q && q.price > 0) return { price: q.price, pct: q.pct, src: 'live', date: q.date };
+  if (s0.mp[a] > 0) return { price: s0.mp[a], pct: null, src: 'manual' };
+  let lt = null;
+  for (const t of s0.sorted) if (t.asset === a && tradeTx(l, t)) lt = t.price;
+  return lt > 0 ? { price: lt, pct: null, src: 'trade' } : null;
+}
+function closeAt(l, a, dayStart) {
+  const s0 = st[l.id];
+  if (l.kind === 'crypto') {
+    if (a === 'USDT') return 1;
+    const hc = s0.closes[a];
+    const v = hc ? hc.map.get(dayStart) : null;
+    return v == null ? null : v;
+  }
+  const hc = s0.closes[a];
+  if (!hc || !hc.list.length) return null;
+  const L = hc.list;
+  if (dayStart < L[0].day) return null;
+  let lo = 0, hi = L.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (L[mid].day <= dayStart) lo = mid; else hi = mid - 1; }
+  return L[lo].close;
+}
+
+/* ---------- 載入 ---------- */
+async function pool(items, n, fn) {
+  let i = 0;
+  async function worker() { while (i < items.length) { const k = i++; await fn(items[k]); } }
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, worker));
+}
+function bump() { ver++; viewCache = {}; }
+function firstByAsset(txs) {
+  const first = {};
+  for (const t of txs) if (first[t.asset] == null || t.ts < first[t.asset]) first[t.asset] = t.ts;
+  return first;
+}
+function heldOf(l) {
+  const r = l.mod.Engine.replay(st[l.id].txs, { method: 'avg' });
+  return Object.keys(r.positions).filter((a) => r.positions[a].qty > 0 && !(l.kind === 'crypto' && a === 'USDT'));
+}
+async function loadPrices(l) {
+  const s0 = st[l.id];
+  const first = firstByAsset(s0.txs);
+  s0.failed = []; s0.unknown = [];
+  if (l.kind === 'crypto') {
+    const assets = Object.keys(first).filter((a) => a !== 'USDT');
+    const held = heldOf(l);
+    const jobs = [pool(assets, 4, async (a) => {
+      try {
+        const list = await l.mod.Market.fetchDailyCloses(a, l.dayStart(first[a]));
+        s0.closes[a] = { map: new Map(list.map((k) => [k.open, k.close])) };
+      } catch (e) { if (!s0.closes[a]) s0.failed.push(a); }
+    })];
+    if (held.length) jobs.push(l.mod.Market.fetchTickers(held).then((r) => { s0.quotes = r.prices; s0.unknown = r.unknown; }).catch(() => { s0.quoteErr = true; }));
+    await Promise.all(jobs);
+    return;
+  }
+  l.mod.Market.setToken(cfg.fmToken);
+  const assets = Object.keys(first);
+  await pool(assets, 4, async (a) => {
+    try {
+      const list = await l.mod.Market.fetchDailyCloses(a, l.dayStart(first[a]) - 10 * DAY_MS);
+      s0.closes[a] = { list };
+      if (list.length) {
+        const last = list[list.length - 1], prev = list[list.length - 2];
+        const d = new Date(last.day + l.off);
+        s0.quotes[a] = { price: last.close, pct: prev ? (last.close / prev.close - 1) * 100 : null,
+          date: d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()) };
+      }
+    } catch (e) { if (!s0.closes[a]) s0.failed.push(a); }
+  });
+  // 歷史抓不到的持股：改抓最新收盤（台股有證交所備援）
+  const need = heldOf(l).filter((a) => !s0.quotes[a]);
+  if (need.length) {
+    try { const r = await l.mod.Market.fetchQuotes(need); Object.assign(s0.quotes, r.prices); s0.unknown = r.unknown; } catch (e) { /* 以成交價估值 */ }
+  }
+}
+async function loadFx(start) {
+  US.Market.setToken(cfg.fmToken);
+  const jobs = [
+    US.Market.fetchFx(start).then((list) => { if (list && list.length) fx.list = list; }).catch(() => {}),
+    CR.Market.fetchFx().then((f) => { if (f && f.rate > 0) fx.spot = f.rate; }).catch(() => {}),
+  ];
+  await Promise.all(jobs);
+  fx.status = 'ready';
+}
+async function loadAll() {
+  if (!session || loading) return;
+  loading = true; updateStatus();
+  const mySession = session;
+  const active = LEDGERS.filter((l) => ledgerOn(l.id));
+  LEDGERS.forEach((l) => { if (!st[l.id]) st[l.id] = freshSt(); if (!ledgerOn(l.id)) st[l.id] = Object.assign(freshSt(), { status: 'off' }); });
+  await Promise.all(active.map(async (l) => {
+    const s0 = st[l.id];
+    if (s0.status !== 'ok') s0.status = 'loading';
+    try {
+      const p = await fetchLedger(l, s0);
+      s0.txs = normTxs(l, p && p.txs);
+      s0.sorted = l.mod.Engine.sortTx(s0.txs);
+      s0.mp = {};
+      Object.keys((p && p.mp) || {}).forEach((a) => { if (p.mp[a] && p.mp[a].p > 0) s0.mp[a.toUpperCase()] = +p.mp[a].p; });
+      s0.status = 'ok'; s0.error = null;
+    } catch (e) { s0.status = 'error'; s0.error = e.message || '讀取失敗'; }
+  }));
+  if (session !== mySession) { loading = false; return; }
+  bump(); renderAll();
+  const ok = active.filter((l) => st[l.id].status === 'ok' && st[l.id].txs.length);
+  let first = Date.now();
+  ok.forEach((l) => st[l.id].txs.forEach((t) => { if (t.ts < first) first = t.ts; }));
+  const jobs = ok.map((l) => loadPrices(l).then(() => { if (session === mySession) { bump(); renderAll(); } }));
+  jobs.push(loadFx(first - 15 * DAY_MS).then(() => { if (session === mySession) { bump(); renderAll(); } }));
+  if (!twInfo && ok.some((l) => l.id === 'tw')) TW.Market.fetchInfo().then((m) => { twInfo = m; if (session === mySession) renderAll(); }).catch(() => {});
+  await Promise.all(jobs);
+  loading = false;
+  if (session !== mySession) return;
+  loadedAt = Date.now();
+  bump(); renderAll();
+}
+async function refreshCrypto() {
+  const l = LBY.cr, s0 = st.cr;
+  if (!session || loading || !s0 || s0.status !== 'ok' || document.visibilityState !== 'visible') return;
+  const held = heldOf(l);
+  if (!held.length) return;
+  try { const r = await l.mod.Market.fetchTickers(held); s0.quotes = r.prices; } catch (e) { return; }
+  if (!session) return;
+  bump(); renderAll(true);
+}
+
+/* ---------- 計算 ---------- */
+/** 單一帳本換成顯示幣別 D 的摘要與每日序列；沒有匯率可換算時回傳 null */
+function view(l, D) {
+  const key = l.id + '|' + D;
+  if (viewCache[key] !== undefined) return viewCache[key];
+  const s0 = st[l.id];
+  let out = null;
+  const cNow = conv(l, D, null);
+  if (s0 && s0.status === 'ok' && s0.txs.length && cNow != null) {
+    const E = l.mod.Engine;
+    const txs = l.cur === D ? s0.sorted : s0.sorted.map((t) => {
+      const f = l.cur === 'USD' ? (t.fx > 0 ? t.fx : conv(l, D, t.ts)) : conv(l, D, t.ts);
+      return Object.assign({}, t, { price: t.price * f, fee: t.fee * f, tax: t.tax * f });
+    });
+    const result = E.replay(txs, { method: 'avg' });
+    const summary = E.summarize(result, (a) => {
+      const p = priceNow(l, a);
+      return p ? { price: p.price * cNow, pct: p.pct, src: p.src, date: p.date } : null;
+    });
+    summary.rows.forEach((r) => { const p = priceNow(l, r.asset); r.nativePrice = p ? p.price : null; });
+    // 每日序列
+    const lastTrade = {};
+    const tradesBy = {};
+    txs.forEach((t) => { if (tradeTx(l, t)) (tradesBy[t.asset] || (tradesBy[t.asset] = [])).push(t); });
+    function fallback(a, ts) { let o = null; for (const t of (tradesBy[a] || [])) { if (t.ts <= ts) o = t.price; else break; } return o; }
+    function point(ts, priceFn) {
+      const r = E.replay(txs, { method: 'avg', upTo: ts });
+      let value = 0, cost = 0, realized = 0;
+      for (const a in r.positions) {
+        const p = r.positions[a];
+        realized += p.realized;
+        if (p.qty <= 0) continue;
+        let px = priceFn(a);
+        if (px == null) px = fallback(a, ts);
+        if (px == null) continue;
+        value += p.qty * px; cost += p.cost;
+      }
+      return { ts, value, cost, realized };
+    }
+    const now = Date.now();
+    const pts = [];
+    for (let d = l.dayStart(txs[0].ts); d + DAY_MS - 1 < now; d += DAY_MS) {
+      if (l.weekdaysOnly) { const wd = new Date(d + l.off).getUTCDay(); if (wd === 0 || wd === 6) continue; }
+      const dayEnd = d + DAY_MS - 1;
+      if (dayEnd < txs[0].ts) continue;
+      const c = conv(l, D, dayEnd);
+      pts.push(point(dayEnd, (a) => { const v = closeAt(l, a, d); return v == null ? null : v * c; }));
+    }
+    pts.push(point(now, (a) => { const p = priceNow(l, a); return p ? p.price * cNow : null; }));
+    out = { summary, pts };
+  }
+  viewCache[key] = out;
+  return out;
+}
+/** 三個帳本合計（顯示幣別 D） */
+function total(D) {
+  const key = 'total|' + D;
+  if (viewCache[key]) return viewCache[key];
+  const parts = [];
+  LEDGERS.forEach((l) => { const v = view(l, D); if (v) parts.push({ l, v }); });
+  const T = { parts, value: 0, cost: 0, unrealized: 0, realized: 0, dividends: 0, total: 0, bought: 0, dayChange: 0, pts: [], rows: [] };
+  parts.forEach(({ l, v }) => {
+    const S = v.summary;
+    T.value += S.value; T.cost += S.cost; T.unrealized += S.unrealized; T.realized += S.realized;
+    T.dividends += S.dividends || 0; T.total += S.total; T.bought += S.bought; T.dayChange += S.dayChange;
+    S.rows.forEach((r) => T.rows.push(Object.assign({ ledger: l }, r)));
+  });
+  T.rows.sort((a, b) => (b.value || 0) - (a.value || 0));
+  T.dayChangePct = T.value - T.dayChange > 0 ? T.dayChange / (T.value - T.dayChange) : null;
+  if (parts.length) {
+    const now = Date.now();
+    const first = Math.min.apply(null, parts.map((x) => x.v.pts[0].ts));
+    const times = [];
+    for (let d = LBY.tw.dayStart(first) + DAY_MS - 1; d < now; d += DAY_MS) if (d >= first) times.push(d);
+    times.push(now);
+    const idx = parts.map(() => -1);
+    times.forEach((ts, ti) => {
+      const isNow = ti === times.length - 1;
+      const pt = { ts, value: 0, cost: 0, realized: 0, by: {} };
+      parts.forEach(({ l, v }, k) => {
+        const P = v.pts;
+        if (isNow) idx[k] = P.length - 1;
+        else while (idx[k] + 1 < P.length - 1 && P[idx[k] + 1].ts <= ts) idx[k]++;
+        const p = idx[k] >= 0 ? P[idx[k]] : { value: 0, cost: 0, realized: 0 };
+        pt.by[l.id] = p;
+        pt.value += p.value; pt.cost += p.cost; pt.realized += p.realized;
+      });
+      T.pts.push(pt);
+    });
+  }
+  viewCache[key] = T;
+  return T;
+}
+function pnlOf(p) { return p ? p.value - p.cost + p.realized : 0; }
+/** 期間損益：回傳 { pnl, pct } 或 null（歷史不足） */
+function periodPnl(pts, pick, cutoff) {
+  const last = pick(pts[pts.length - 1]);
+  let start = null;
+  if (cutoff == null) start = { value: 0, cost: 0, realized: 0 };
+  else {
+    if (pts[0].ts > cutoff) return null;
+    for (const p of pts) { if (p.ts <= cutoff) start = pick(p); else break; }
+  }
+  if (!start || !last) return null;
+  const pnl = pnlOf(last) - pnlOf(start);
+  const base = start.value + Math.max(0, last.cost - start.cost);
+  return { pnl, pct: base > 0 ? pnl / base : null };
+}
+
+/* ---------- 畫面 ---------- */
+function logo(size) {
+  const svg = s('svg', { viewBox: '0 0 24 24', width: size || 26, height: size || 26, 'aria-hidden': 'true' });
+  svg.appendChild(s('rect', { width: 24, height: 24, rx: 6, fill: 'var(--c7)' }));
+  svg.appendChild(s('path', { d: 'M6 16l4-5 3 3 5-7', fill: 'none', stroke: 'white', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+  return svg;
+}
+function pnlText(v, cur) { return arrow(v) + fmtSigned(v, cur); }
+function tile(label, value, sub, cls) {
+  return h('div', { class: 'tile' }, h('div', { class: 't-label' }, label), h('div', { class: 't-value num ' + (cls || '') }, value), h('div', { class: 't-sub' }, sub || ''));
+}
+function assetName(l, a) { const r = l.id === 'tw' && twInfo && twInfo[a]; return r ? r[0] : ''; }
+
+function buildShell() {
+  clear($root);
+  el.status = h('span', { class: 'status' }, h('span', { class: 'dot' }), h('span', { class: 'st-text' }, ''));
+  el.curCtl = h('div', { class: 'segctl', role: 'radiogroup', 'aria-label': '顯示幣別' });
+  [['TWD', '台幣'], ['USD', '美元']].forEach((c) => el.curCtl.appendChild(h('button', { type: 'button', role: 'radio', 'data-cur': c[0],
+    onclick: () => { cfg.cur = c[0]; persist(); renderAll(); } }, c[1])));
+  const top = h('header', { class: 'topbar' },
+    h('div', { class: 'brand' }, logo(), h('span', null, '總資產總覽')),
+    el.status, el.curCtl,
+    h('div', { class: 'tools' },
+      h('button', { class: 'btn icon', type: 'button', 'aria-label': '重新整理', title: '重新整理', onclick: () => loadAll() }, icon('refresh')),
+      h('button', { class: 'btn icon', type: 'button', 'aria-label': '設定', title: '設定', onclick: openSettings }, icon('sliders')),
+      h('button', { class: 'btn icon', type: 'button', 'aria-label': '鎖定', title: '鎖定', onclick: lockNow }, icon('lock'))));
+  el.notices = h('div');
+  ['summary', 'chart', 'periods', 'alloc', 'holdings'].forEach((k) => { el[k] = h('section', { class: 'card' }); });
+  $root.appendChild(h('div', { class: 'page' }, top, el.notices, el.summary, el.chart, el.periods, el.alloc, el.holdings));
+}
+function updateStatus() {
+  if (!el.status) return;
+  const anyErr = LEDGERS.some((l) => st[l.id] && st[l.id].status === 'error');
+  el.status.className = 'status ' + (loading ? 'loading' : anyErr ? 'error' : loadedAt ? 'ok' : '');
+  el.status.querySelector('.st-text').textContent = loading ? '載入中…' : loadedAt ? '更新於 ' + fmtTime(loadedAt) : '';
+}
+function renderAll(light) {
+  if (!session || !el.summary) return;
+  updateStatus();
+  el.curCtl.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', String(b.getAttribute('data-cur') === cfg.cur)));
+  const D = cfg.cur;
+  const T = total(D);
+  renderNotices(T);
+  const configured = LEDGERS.some((l) => ledgerOn(l.id));
+  const empty = !T.parts.length;
+  [el.chart, el.periods, el.alloc, el.holdings].forEach((x) => { x.hidden = empty; });
+  if (empty) {
+    clear(el.summary);
+    const waiting = loading || LEDGERS.some((l) => st[l.id] && st[l.id].status === 'loading');
+    el.summary.appendChild(h('div', { class: 'empty' },
+      h('h2', null, !configured ? '先連結你的帳本' : waiting ? '讀取帳本中…' : '還沒有可顯示的資料'),
+      h('p', null, !configured ? '到「設定」貼上各帳本的同步設定碼（在帳本的「設定 → 雲端同步」可以複製），就能在這裡看到合計。'
+        : waiting ? '正在從 GitHub 下載並解密同步檔。' : '帳本讀取失敗或還沒有任何交易，請看上方的提示。'),
+      !configured ? h('button', { class: 'btn primary', type: 'button', onclick: openSettings }, '開啟設定') : null));
+    return;
+  }
+  renderSummary(T, D);
+  if (!(light && chartHover)) renderChart(T, D);
+  renderPeriods(T, D);
+  renderAlloc(T, D);
+  renderHoldings(T, D);
+}
+function renderNotices(T) {
+  clear(el.notices);
+  const add = (text, btn) => el.notices.appendChild(h('div', { class: 'notice' }, icon('alert'), h('div', { class: 'grow' }, text), btn || null));
+  LEDGERS.forEach((l) => {
+    const s0 = st[l.id];
+    if (!s0) return;
+    if (s0.status === 'error') add(l.name + '帳本讀取失敗：' + s0.error, h('button', { class: 'btn small', type: 'button', onclick: openSettings }, '檢查設定'));
+    if (s0.status === 'ok' && s0.failed.length) add(l.name + '：無法取得 ' + s0.failed.join('、') + ' 的歷史價格（可能是查詢次數達上限），暫時以成交價估算。');
+  });
+  const needFx = LEDGERS.some((l) => st[l.id] && st[l.id].status === 'ok' && st[l.id].txs.length && l.cur !== cfg.cur);
+  if (needFx && fx.status === 'ready' && !fxNowInfo()) add('目前沒有美元匯率，無法換算合計。可在「設定」填入手動匯率。');
+  else if (needFx && fx.status === 'ready' && !fx.list.length) add('拿不到歷史匯率，過去的金額暫時都以目前匯率換算。');
+}
+function renderSummary(T, D) {
+  clear(el.summary);
+  const other = D === 'TWD' ? 'USD' : 'TWD';
+  const n = fxNowInfo();
+  const otherVal = n ? (D === 'TWD' ? T.value / n.rate : T.value * n.rate) : null;
+  el.summary.appendChild(h('div', { class: 'hero-label' }, '總資產市值（' + T.parts.map((x) => x.l.name).join('＋') + '）'));
+  el.summary.appendChild(h('div', { class: 'hero-value num' }, fmtMoney(T.value, D)));
+  el.summary.appendChild(h('div', { class: 'hero-delta ' + signClass(T.dayChange) }, '最近一日 ' + pnlText(T.dayChange, D) + (T.dayChangePct != null ? '（' + fmtPct(T.dayChangePct, true) + '）' : '')));
+  if (n) el.summary.appendChild(h('div', { class: 'hero-delta muted' }, '≈ ' + fmtMoney(otherVal, other) + '　1 美元 = ' + num(n.rate, 2, 4) + ' 台幣（' + n.src + '）'));
+  el.summary.appendChild(h('div', { class: 'kpis' },
+    tile('持有成本', fmtMoney(T.cost, D), T.rows.length + ' 項持有'),
+    tile('未實現損益', pnlText(T.unrealized, D), T.cost > 0 ? fmtPct(T.unrealized / T.cost, true) : '—', signClass(T.unrealized)),
+    tile('已實現損益', pnlText(T.realized, D), '含股利 ' + fmtMoney(T.dividends, D), signClass(T.realized)),
+    tile('總損益', pnlText(T.total, D), T.bought > 0 ? fmtPct(T.total / T.bought, true) + '（相對累計買入）' : '—', signClass(T.total))));
+  if (D !== 'TWD' || T.parts.some((x) => x.l.cur !== 'TWD')) {
+    el.summary.appendChild(h('p', { class: 'foot' }, '換算後的成本與損益以每筆交易當時的匯率計算，所以包含匯差。'));
+  }
+}
+function renderChart(T, D) {
+  clear(el.chart);
+  const seg = h('div', { class: 'segctl wrap', role: 'radiogroup', 'aria-label': '期間' });
+  RANGES.forEach((r) => seg.appendChild(h('button', { type: 'button', role: 'radio', 'aria-checked': String(cfg.range === r[0]),
+    onclick: () => { cfg.range = r[0]; persist(); chartHover = false; renderChart(total(cfg.cur), cfg.cur); } }, r[1])));
+  el.chart.appendChild(h('div', { class: 'card-head' }, h('h2', null, '總資產變化'), seg));
+  const body = h('div', { class: 'chart-body' + (loading ? ' is-loading' : '') });
+  el.chart.appendChild(body);
+  const range = RANGES.filter((r) => r[0] === cfg.range)[0];
+  let pts = T.pts;
+  if (range[2] > 0) {
+    const cutoff = Date.now() - range[2] * DAY_MS;
+    const sl = pts.filter((p) => p.ts >= cutoff);
+    pts = sl.length >= 2 ? sl : pts.slice(-2);
+  }
+  if (pts.length < 2) { body.className = 'chart-body placeholder'; body.textContent = '資料點不足：交易需要跨越至少一天才能畫出曲線。'; return; }
+  stackChart(body, pts, T.parts.map((x) => x.l), D);
+  if (window.ResizeObserver) {
+    let lastW = body.clientWidth;
+    const ro = new ResizeObserver(() => {
+      if (!body.isConnected) { ro.disconnect(); return; }
+      if (Math.abs(body.clientWidth - lastW) > 8) { lastW = body.clientWidth; ro.disconnect(); renderChart(total(cfg.cur), cfg.cur); }
+    });
+    ro.observe(body);
+  }
+  el.chart.appendChild(h('p', { class: 'foot' }, '每日以收盤價估值（台灣日期；美股為前一個美東交易日收盤，假日沿用前一個交易日）。美股與加密貨幣依當日臺銀匯率換算。'));
+}
+/** 堆疊面積圖：各類資產市值相疊＝總市值；虛線為持有成本 */
+function stackChart(container, pts, ledgers, cur) {
+  clear(container);
+  const W = Math.max(container.clientWidth || 640, 240), H = 300;
+  const m = { t: 16, r: 20, b: 30, l: cur === 'TWD' ? 60 : 56 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const n = pts.length, x0 = pts[0].ts, x1 = pts[n - 1].ts;
+  let hi = 0;
+  for (const p of pts) hi = Math.max(hi, p.value, p.cost);
+  const nt = niceTicks(0, hi * 1.06 || 1, 5);
+  const X = (ts) => m.l + (x1 === x0 ? iw / 2 : ((ts - x0) / (x1 - x0)) * iw);
+  const Y = (v) => m.t + ih - ((v - nt.min) / (nt.max - nt.min)) * ih;
+  const svg = s('svg', { class: 'chart', viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img', tabindex: 0,
+    'aria-label': '總資產變化：' + fmtDate(x0) + ' 至今，總市值由 ' + fmtMoney(pts[0].value, cur) + ' 變為 ' + fmtMoney(pts[n - 1].value, cur) + '。可用左右方向鍵逐日瀏覽。' });
+  nt.ticks.forEach((v, i) => {
+    const y = Y(v);
+    svg.appendChild(s('line', { class: i === 0 ? 'axis' : 'grid', x1: m.l, x2: W - m.r, y1: y, y2: y }));
+    svg.appendChild(s('text', { class: 'tick', x: m.l - 8, y: y + 4, 'text-anchor': 'end' }, compact(v, cur)));
+  });
+  const long = x1 - x0 > 400 * DAY_MS, seen = {}, nx = Math.min(5, n);
+  for (let i = 0; i < nx; i++) {
+    const idx = nx === 1 ? 0 : Math.round((i * (n - 1)) / (nx - 1));
+    const d = fmtDate(pts[idx].ts);
+    const label = long ? d.slice(0, 7) : d.slice(5);
+    if (seen[label]) continue;
+    seen[label] = 1;
+    svg.appendChild(s('text', { class: 'tick', x: X(pts[idx].ts), y: H - 8, 'text-anchor': i === 0 ? 'start' : i === nx - 1 ? 'end' : 'middle' }, label));
+  }
+  // 堆疊
+  const base = pts.map(() => 0);
+  ledgers.forEach((l) => {
+    const top = pts.map((p, i) => base[i] + (p.by[l.id] ? p.by[l.id].value : 0));
+    let d = '';
+    pts.forEach((p, i) => { d += (i ? 'L' : 'M') + X(p.ts).toFixed(1) + ' ' + Y(top[i]).toFixed(1); });
+    for (let i = n - 1; i >= 0; i--) d += 'L' + X(pts[i].ts).toFixed(1) + ' ' + Y(base[i]).toFixed(1);
+    svg.appendChild(s('path', { d: d + 'Z', class: 'area', style: { fill: l.color } }));
+    top.forEach((v, i) => { base[i] = v; });
+  });
+  const line = (key) => pts.map((p, i) => (i ? 'L' : 'M') + X(p.ts).toFixed(1) + ' ' + Y(p[key]).toFixed(1)).join('');
+  svg.appendChild(s('path', { class: 'line total', d: line('value') }));
+  svg.appendChild(s('path', { class: 'line costline', d: line('cost') }));
+  const last = pts[n - 1];
+  svg.appendChild(s('circle', { class: 'dot', cx: X(last.ts), cy: Y(last.value), r: 4, style: { fill: 'var(--ink)' } }));
+  svg.appendChild(s('text', { class: 'endlabel', x: X(last.ts), y: Y(last.value) - 10, 'text-anchor': 'end' }, fmtMoney(last.value, cur)));
+
+  const cross = s('line', { class: 'cross', y1: m.t, y2: m.t + ih, x1: 0, x2: 0, visibility: 'hidden' });
+  const hv = s('circle', { class: 'dot', r: 4, visibility: 'hidden', style: { fill: 'var(--ink)' } });
+  svg.appendChild(cross); svg.appendChild(hv);
+  const overlay = s('rect', { class: 'overlay', x: m.l, y: m.t, width: iw, height: ih });
+  svg.appendChild(overlay);
+  let ci = n - 1;
+  function showAt(i) {
+    ci = i; chartHover = true;
+    const p = pts[i], px = X(p.ts);
+    cross.setAttribute('x1', px); cross.setAttribute('x2', px); cross.setAttribute('visibility', 'visible');
+    hv.setAttribute('cx', px); hv.setAttribute('cy', Y(p.value)); hv.setAttribute('visibility', 'visible');
+    const r = svg.getBoundingClientRect();
+    const rows = [h('div', { class: 'tip-head' }, i === n - 1 ? '現在　' + fmtDT(p.ts) : fmtDate(p.ts))];
+    ledgers.slice().reverse().forEach((l) => rows.push(tipRow(l.color, l.name, fmtMoney(p.by[l.id] ? p.by[l.id].value : 0, cur), false)));
+    rows.push(tipRow('var(--ink)', '總市值', fmtMoney(p.value, cur), true));
+    rows.push(tipRow('var(--ink-3)', '持有成本', fmtMoney(p.cost, cur), false));
+    rows.push(tipRow(null, '累計損益', fmtSigned(pnlOf(p), cur), false));
+    Tip.show(r.left + (px / W) * r.width, r.top + (Y(p.value) / H) * r.height, rows);
+  }
+  function hideAll() { chartHover = false; cross.setAttribute('visibility', 'hidden'); hv.setAttribute('visibility', 'hidden'); Tip.hide(); }
+  function nearest(clientX) {
+    const r = svg.getBoundingClientRect();
+    const ts = x0 + ((((clientX - r.left) / r.width) * W - m.l) / iw) * (x1 - x0);
+    let a = 0, b = n - 1;
+    while (b - a > 1) { const mid = (a + b) >> 1; if (pts[mid].ts < ts) a = mid; else b = mid; }
+    return Math.abs(pts[a].ts - ts) <= Math.abs(pts[b].ts - ts) ? a : b;
+  }
+  overlay.addEventListener('pointermove', (e) => showAt(nearest(e.clientX)));
+  overlay.addEventListener('pointerdown', (e) => showAt(nearest(e.clientX)));
+  overlay.addEventListener('pointerleave', hideAll);
+  overlay.addEventListener('pointercancel', hideAll);
+  svg.addEventListener('focus', () => showAt(ci));
+  svg.addEventListener('blur', hideAll);
+  svg.addEventListener('keydown', (e) => {
+    let i = ci;
+    if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+    else if (e.key === 'ArrowRight') i = Math.min(n - 1, i + 1);
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = n - 1;
+    else return;
+    e.preventDefault(); showAt(i);
+  });
+  const legend = h('div', { class: 'legend wrap', style: { margin: '0 0 6px' } },
+    ledgers.map((l) => h('span', { class: 'lg-item' }, h('span', { class: 'lg-box', style: { background: l.color } }), l.name)),
+    h('span', { class: 'lg-item' }, h('span', { class: 'lg-line', style: { background: 'var(--ink)' } }), '總市值'),
+    h('span', { class: 'lg-item' }, h('span', { class: 'lg-line dash' }), '持有成本'));
+  container.appendChild(legend);
+  container.appendChild(svg);
+}
+function renderPeriods(T, D) {
+  clear(el.periods);
+  el.periods.appendChild(h('div', { class: 'card-head' }, h('h2', null, '期間損益'), h('span', { class: 'card-sub' }, '市值變化扣掉期間內新投入的資金，含已實現損益與股利')));
+  const now = Date.now();
+  const y0 = new Date(now + TPE);
+  const ytd = Date.UTC(y0.getUTCFullYear(), 0, 1) - TPE - 1;
+  const periods = [['1 週', now - 7 * DAY_MS], ['1 個月', now - 30 * DAY_MS], ['3 個月', now - 90 * DAY_MS], ['今年以來', ytd], ['1 年', now - 365 * DAY_MS], ['全部', null]];
+  const cell = (label, r) => h('td', { 'data-label': label, class: r ? signClass(r.pnl) : '' },
+    r ? [h('div', null, pnlText(r.pnl, D)), h('div', { class: 'subq' }, r.pct != null ? fmtPct(r.pct, true) : '')] : '—');
+  const row = (name, color, day, pick) => h('tr', null,
+    h('td', null, h('span', { class: 'asset' }, color ? h('span', { class: 'lg-box', style: { background: color } }) : null, name)),
+    h('td', { 'data-label': '最近一日', class: signClass(day.v) }, [h('div', null, pnlText(day.v, D)), h('div', { class: 'subq' }, day.pct != null ? fmtPct(day.pct, true) : '')]),
+    periods.map((p) => cell(p[0], periodPnl(T.pts, pick, p[1]))));
+  const rows = T.parts.map(({ l, v }) => row(l.name, l.color, { v: v.summary.dayChange, pct: v.summary.dayChangePct }, (p) => p.by[l.id]));
+  const foot = row('合計', null, { v: T.dayChange, pct: T.dayChangePct }, (p) => p);
+  el.periods.appendChild(h('div', { class: 'tablewrap' }, h('table', { class: 'rt' },
+    h('thead', null, h('tr', null, h('th', null, '類別'), h('th', null, '最近一日'), periods.map((p) => h('th', null, p[0])))),
+    h('tbody', null, rows), h('tfoot', null, foot))));
+  el.periods.appendChild(h('p', { class: 'foot' }, '「—」表示該帳本的紀錄還不到這麼長。百分比以期初市值加上期間新增成本為基準。'));
+}
+function renderAlloc(T, D) {
+  clear(el.alloc);
+  el.alloc.appendChild(h('div', { class: 'card-head' }, h('h2', null, '資產配置'), h('span', { class: 'card-sub' }, '依帳本')));
+  const body = h('div');
+  el.alloc.appendChild(body);
+  const byName = {};
+  T.parts.forEach((x) => { byName[x.l.name] = x.l.color; });
+  allocBar(body, T.parts.map((x) => ({ asset: x.l.name, value: x.v.summary.value })), { cur: D, colorOf: (a) => byName[a] });
+  const grid = h('div', { class: 'kpis' });
+  LEDGERS.forEach((l) => {
+    const s0 = st[l.id], v = view(l, D), url = cfg.ledgers[l.id].url;
+    const head = h('div', { class: 't-label', style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+      h('span', { class: 'lg-box', style: { background: l.color } }), h('span', { style: { marginRight: 'auto' } }, l.name),
+      /^https:\/\//i.test(url) ? h('a', { class: 'btn link', href: url, target: '_blank', rel: 'noopener noreferrer' }, '開啟帳本') : null);
+    let content;
+    if (v) {
+      const S = v.summary;
+      content = [
+        h('div', { class: 't-value num' }, fmtMoney(S.value, D)),
+        h('div', { class: 't-sub' }, '占 ' + (T.value > 0 ? fmtPct(S.value / T.value) : '—') + ' · ' + S.rows.length + ' 項'),
+        h('div', { class: 't-sub ' + signClass(S.unrealized) }, '未實現 ' + pnlText(S.unrealized, D) + (S.unrealizedPct != null ? '（' + fmtPct(S.unrealizedPct, true) + '）' : '')),
+        h('div', { class: 't-sub ' + signClass(S.dayChange) }, '最近一日 ' + pnlText(S.dayChange, D)),
+        l.cur !== D ? null : null,
+      ];
+    } else {
+      const msg = !s0 || s0.status === 'off' ? '尚未連結' : s0.status === 'loading' ? '讀取中…' : s0.status === 'error' ? '讀取失敗' : !s0.txs.length ? '沒有交易紀錄' : '等待匯率';
+      content = [h('div', { class: 't-sub', style: { marginTop: '8px' } }, msg)];
+    }
+    grid.appendChild(h('div', { class: 'tile' }, head, content));
+  });
+  el.alloc.appendChild(grid);
+}
+function renderHoldings(T, D) {
+  clear(el.holdings);
+  el.holdings.appendChild(h('div', { class: 'card-head' }, h('h2', null, '全部持有'), h('span', { class: 'card-sub' }, '依市值排序 · ' + T.rows.length + ' 項')));
+  const rows = T.rows.map((r) => {
+    const nm = assetName(r.ledger, r.asset);
+    return h('tr', null,
+      h('td', null, h('span', { class: 'asset' }, h('span', { class: 'lg-box', style: { background: r.ledger.color }, title: r.ledger.name }), r.asset, nm ? h('span', { class: 'sname' }, nm) : null,
+        r.src && r.src !== 'live' ? h('span', { class: 'badge' }, r.src === 'manual' ? '手動價' : '成交價') : null)),
+      h('td', { 'data-label': '類別', class: 'l muted' }, r.ledger.name),
+      h('td', { 'data-label': '現價（原幣）' }, r.nativePrice != null ? fmtPrice(r.nativePrice, r.ledger.cur) : '—'),
+      h('td', { 'data-label': '日漲跌', class: signClass(r.pct) }, r.pct != null ? fmtPct(r.pct / 100, true) : '—'),
+      h('td', { 'data-label': '市值' }, fmtMoney(r.value, D)),
+      h('td', { 'data-label': '占總資產' }, r.value != null && T.value > 0 ? fmtPct(r.value / T.value) : '—'),
+      h('td', { 'data-label': '成本' }, fmtMoney(r.cost, D)),
+      h('td', { 'data-label': '未實現損益', class: signClass(r.unrealized) }, r.unrealized != null ? pnlText(r.unrealized, D) : '—'),
+      h('td', { 'data-label': '報酬率', class: signClass(r.unrealized) }, r.unrealizedPct != null ? fmtPct(r.unrealizedPct, true) : '—'));
+  });
+  el.holdings.appendChild(h('div', { class: 'tablewrap' }, h('table', { class: 'rt' },
+    h('thead', null, h('tr', null, ['資產', '類別', '現價（原幣）', '日漲跌', '市值', '占總資產', '成本', '未實現損益', '報酬率'].map((t, i) => h('th', { class: i === 1 ? 'l' : '' }, t)))),
+    h('tbody', null, rows),
+    h('tfoot', null, h('tr', null, h('td', null, '合計'), h('td', null, ''), h('td', null, ''), h('td', null, ''),
+      h('td', { 'data-label': '市值' }, fmtMoney(T.value, D)), h('td', null, ''), h('td', { 'data-label': '成本' }, fmtMoney(T.cost, D)),
+      h('td', { 'data-label': '未實現損益', class: signClass(T.unrealized) }, pnlText(T.unrealized, D)),
+      h('td', { 'data-label': '報酬率', class: signClass(T.unrealized) }, T.cost > 0 ? fmtPct(T.unrealized / T.cost, true) : '—'))))));
+  el.holdings.appendChild(h('p', { class: 'foot' }, '成本一律以加權平均法計算，可能與設成 FIFO 的帳本略有不同。台股、美股為最近一個交易日收盤價；加密貨幣為幣安即時價。'));
+}
+
+/* ---------- 設定 ---------- */
+function decodeSetup(code) {
+  const m = /^cl1:([A-Za-z0-9+/=]+)$/.exec((code || '').trim());
+  if (!m) throw new Error('這不是有效的同步設定碼');
+  try {
+    const bin = atob(m[1]);
+    const o = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+    if (!o.o || !o.r || !o.t || !o.p) throw new Error('x');
+    return { repo: o.o + '/' + o.r, token: o.t, pw: o.p };
+  } catch (e) { throw new Error('同步設定碼已損毀或不完整'); }
+}
+function openSettings() {
+  modal((close) => {
+    const f = {};
+    const err = h('div', { class: 'err', role: 'alert' });
+    const box = [h('h2', null, '設定'),
+      h('p', { class: 'lead' }, '這一頁只「讀取」各帳本存在 GitHub 私人 repo 裡的加密同步檔，不會寫入或修改帳本。每個帳本需先在自己的「設定 → 雲端同步」開啟同步。')];
+    LEDGERS.forEach((l) => {
+      const c = cfg.ledgers[l.id];
+      const inp = (k, type, ph) => h('input', { type, id: 'cf-' + l.id + '-' + k, value: c[k] || '', placeholder: ph || '', autocomplete: 'off', spellcheck: 'false' });
+      const o = f[l.id] = { repo: inp('repo', 'text', '帳號/repo 名稱'), token: inp('token', 'password', 'github_pat_…'), pw: inp('pw', 'password', ''), url: inp('url', 'text', 'https://…（選填）') };
+      const code = h('input', { type: 'password', id: 'cf-' + l.id + '-code', placeholder: 'cl1:…', autocomplete: 'off' });
+      const fill = (v, all) => { (all ? LEDGERS : [l]).forEach((x) => { f[x.id].repo.value = v.repo; f[x.id].token.value = v.token; f[x.id].pw.value = v.pw; }); };
+      const apply = (all) => { err.textContent = ''; try { fill(decodeSetup(code.value), all); code.value = ''; toast(all ? '已套用到三個帳本' : '已填入'); } catch (e) { err.textContent = e.message; } };
+      box.push(h('div', { class: 'sec' },
+        h('h3', null, h('span', { class: 'lg-box', style: { background: l.color, marginRight: '8px' } }), l.name + '帳本（' + l.path + '）'),
+        h('div', { class: 'field' }, h('label', { for: code.id }, '貼上同步設定碼（自動填入下面三欄）'),
+          h('div', { class: 'inline' }, code, h('button', { class: 'btn small', type: 'button', onclick: () => apply(false) }, '填入'),
+            h('button', { class: 'btn small', type: 'button', title: '三個帳本共用同一個 repo、Token 與同步密碼時使用', onclick: () => apply(true) }, '套用到全部'))),
+        h('div', { class: 'row2' },
+          h('div', { class: 'field' }, h('label', { for: o.repo.id }, 'GitHub 私人 repo'), o.repo),
+          h('div', { class: 'field' }, h('label', { for: o.token.id }, 'GitHub Token（Contents 讀取即可）'), o.token)),
+        h('div', { class: 'row2' },
+          h('div', { class: 'field' }, h('label', { for: o.pw.id }, '同步密碼'), o.pw),
+          h('div', { class: 'field' }, h('label', { for: o.url.id }, '帳本網址（顯示「開啟帳本」連結）'), o.url))));
+    });
+    const fm = h('input', { type: 'password', id: 'cf-fm', value: cfg.fmToken, autocomplete: 'off', placeholder: '選填' });
+    const fxm = h('input', { type: 'number', id: 'cf-fx', value: cfg.fxManual || '', step: 'any', min: '0', placeholder: '例如 32.5（選填）' });
+    const sel = (id, opts, val) => { const e = h('select', { id }, opts.map((o) => h('option', { value: o[0] }, o[1]))); e.value = val; return e; };
+    const th = sel('cf-th', [['auto', '跟隨系統'], ['light', '淺色'], ['dark', '深色']], cfg.theme);
+    const ud = sel('cf-ud', [['red-up', '紅漲綠跌'], ['green-up', '綠漲紅跌']], cfg.ud);
+    box.push(h('div', { class: 'sec' }, h('h3', null, '行情與顯示'),
+      h('div', { class: 'row2' },
+        h('div', { class: 'field' }, h('label', { for: 'cf-fm' }, 'FinMind Token'), fm, h('span', { class: 'hint' }, '股票歷史價格查詢次數不夠時填入，可提高額度。')),
+        h('div', { class: 'field' }, h('label', { for: 'cf-fx' }, '手動匯率（1 美元 = ? 台幣）'), fxm, h('span', { class: 'hint' }, '只在抓不到匯率時使用。'))),
+      h('div', { class: 'row2' },
+        h('div', { class: 'field' }, h('label', { for: 'cf-th' }, '主題'), th),
+        h('div', { class: 'field' }, h('label', { for: 'cf-ud' }, '漲跌顏色'), ud))));
+    box.push(h('div', { class: 'sec' }, h('h3', null, '這台裝置'),
+      h('div', { class: 'btnrow' }, h('button', { class: 'btn danger', type: 'button', onclick: () => {
+        if (!window.confirm('要清除這台裝置上的總覽設定嗎？（不影響任何帳本與 GitHub 上的資料）')) return;
+        Vault.reset(VAULT_ID); close(); lockNow();
+      } }, '清除總覽設定並重設密碼'))));
+    box.push(err);
+    box.push(h('div', { class: 'dlg-actions' },
+      h('button', { class: 'btn', type: 'button', onclick: () => close() }, '取消'),
+      h('button', { class: 'btn primary', type: 'button', onclick: async () => {
+        const next = cleanCfg(cfg);
+        for (const l of LEDGERS) {
+          const o = f[l.id], c = next.ledgers[l.id];
+          c.repo = o.repo.value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+          c.token = o.token.value.trim(); c.pw = o.pw.value; c.url = o.url.value.trim();
+          const filled = [c.repo, c.token, c.pw].filter(Boolean).length;
+          if (filled > 0 && filled < 3) { err.textContent = l.name + '：repo、Token、同步密碼需要三個都填（或三個都留空表示不納入）'; return; }
+          if (c.repo && !/^[^/\s]+\/[^/\s]+$/.test(c.repo)) { err.textContent = l.name + '：repo 請填「帳號/名稱」'; return; }
+          if (c.url && !/^https:\/\//i.test(c.url)) { err.textContent = l.name + '：帳本網址需以 https:// 開頭'; return; }
+        }
+        next.fmToken = fm.value.trim(); next.fxManual = parseFloat(fxm.value) > 0 ? parseFloat(fxm.value) : null;
+        next.theme = th.value; next.ud = ud.value;
+        cfg = next; st = {}; fx = { list: [], spot: null, status: 'idle' }; loadedAt = null;
+        applyLook(); bump();
+        await persist();
+        close(); renderAll(); loadAll();
+      } }, '儲存並重新載入')));
+    return box;
+  });
+}
+
+/* ---------- 鎖定 ---------- */
+function armIdle() { clearTimeout(timers.idle); if (session) timers.idle = setTimeout(lockNow, IDLE_MIN * 60000); }
+function lockNow() {
+  Object.keys(timers).forEach((k) => { clearTimeout(timers[k]); clearInterval(timers[k]); });
+  document.querySelectorAll('dialog').forEach((d) => d.remove());
+  Tip.hide();
+  session = null; cfg = null; st = {}; fx = { list: [], spot: null, status: 'idle' }; viewCache = {}; loading = false; loadedAt = null;
+  Object.keys(el).forEach((k) => delete el[k]);
+  showLock();
+}
+function enterApp(sess, c) {
+  session = sess; cfg = cleanCfg(c);
+  applyLook(); buildShell(); renderAll(); loadAll(); armIdle();
+  timers.crypto = setInterval(refreshCrypto, 60000);
+  timers.full = setInterval(() => { if (document.visibilityState === 'visible') loadAll(); }, 30 * 60000);
+}
+function showLock() {
+  applyLook();
+  clear($root);
+  if (!Vault.supported()) {
+    $root.appendChild(h('div', { class: 'lock' }, h('div', { class: 'lock-card' }, logo(48), h('h1', null, '無法啟用'),
+      h('p', { class: 'lock-sub' }, '這個瀏覽器不支援加密功能或禁止儲存資料。請改用 https 網址（例如 GitHub Pages）並關閉無痕模式後再試。'))));
+    return;
+  }
+  const isNew = !Vault.has(VAULT_ID);
+  const msg = h('div', { class: 'lock-msg', role: 'alert' });
+  const p1 = h('input', { type: 'password', inputmode: 'numeric', autocomplete: 'off', 'aria-label': '解鎖密碼', placeholder: isNew ? '設定解鎖密碼（至少 4 碼）' : '解鎖密碼' });
+  const p2 = isNew ? h('input', { type: 'password', inputmode: 'numeric', autocomplete: 'off', 'aria-label': '再輸入一次', placeholder: '再輸入一次' }) : null;
+  const btn = h('button', { class: 'btn primary', type: 'submit', style: { width: '100%' } }, isNew ? '建立' : '解鎖');
+  const fail = (t) => { msg.className = 'lock-msg err'; msg.textContent = t; btn.disabled = false; };
+  const form = h('form', { style: { display: 'flex', flexDirection: 'column', gap: '10px' }, onsubmit: async (e) => {
+    e.preventDefault();
+    const pin = p1.value;
+    if (isNew) {
+      if (pin.length < 4) return fail('密碼至少 4 碼');
+      if (pin !== p2.value) return fail('兩次輸入的密碼不一樣');
+      btn.disabled = true;
+      try { const c = defaultCfg(); enterApp(await Vault.create(VAULT_ID, pin, c), c); } catch (er) { fail('無法儲存：瀏覽器可能已禁止儲存資料'); }
+      return;
+    }
+    const wait = Vault.lockRemainingMs(VAULT_ID);
+    if (wait > 0) return fail('嘗試太多次，請 ' + Math.ceil(wait / 1000) + ' 秒後再試');
+    if (!pin) return;
+    btn.disabled = true;
+    try {
+      const r = await Vault.unlock(VAULT_ID, pin);
+      Vault.clearFails(VAULT_ID);
+      enterApp(r.session, r.data);
+    } catch (er) {
+      if (er.message === 'BAD_PIN') { const x = Vault.recordFail(VAULT_ID); p1.value = ''; fail(x.lockedMs > 0 ? '密碼錯誤，請 ' + Math.ceil(x.lockedMs / 1000) + ' 秒後再試' : '密碼錯誤'); }
+      else fail('資料損毀，無法解鎖');
+    }
+  } }, p1, p2, btn);
+  $root.appendChild(h('div', { class: 'lock' }, h('div', { class: 'lock-card' }, logo(48), h('h1', null, '總資產總覽'),
+    h('p', { class: 'lock-sub' }, isNew ? '先設定一組解鎖密碼。它用來加密存在這台裝置上的 GitHub Token 與同步密碼。' : '輸入解鎖密碼'),
+    form, msg,
+    isNew ? null : h('p', { class: 'lock-foot' }, h('button', { class: 'btn link', type: 'button', onclick: () => {
+      if (window.confirm('忘記密碼只能清除這台裝置上的總覽設定後重新設定（不影響帳本）。要清除嗎？')) { Vault.reset(VAULT_ID); showLock(); }
+    } }, '忘記密碼？')))));
+  p1.focus();
+}
+['pointerdown', 'keydown', 'scroll'].forEach((ev) => window.addEventListener(ev, armIdle, { passive: true, capture: true }));
+showLock();
+
+</script>
+</body>
+</html>
