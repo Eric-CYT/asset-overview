@@ -2888,10 +2888,70 @@ function renderAlloc(T, D) {
   });
   el.alloc.appendChild(grid);
 }
+const HCOLS = [
+  ['asset', '資產', (r) => r.asset],
+  ['cls', '類別', (r) => r.ledger.name],
+  ['price', '現價（原幣）', (r) => r.nativePrice],
+  ['pct', '日漲跌', (r) => r.pct],
+  ['value', '市值', (r) => r.value],
+  ['share', '占總資產', (r) => r.value],
+  ['cost', '成本', (r) => r.cost],
+  ['unreal', '未實現損益', (r) => r.unrealized],
+  ['ret', '報酬率', (r) => r.unrealizedPct],
+];
+let hf = { q: '', cls: '', pnl: '', sort: 'value', dir: -1 };
+let hui = null;
+function holdFiltered() { return !!(hf.q || hf.cls || hf.pnl); }
+function setHoldSort(key) {
+  if (hf.sort === key) hf.dir = -hf.dir;
+  else { hf.sort = key; hf.dir = key === 'asset' || key === 'cls' ? 1 : -1; }
+  renderHoldings(total(cfg.cur), cfg.cur);
+}
+function buildHoldUi() {
+  const again = () => renderHoldings(total(cfg.cur), cfg.cur);
+  const q = h('input', { type: 'text', class: 'q', placeholder: '搜尋代號或名稱', 'aria-label': '搜尋代號或名稱', autocomplete: 'off', oninput: () => { hf.q = q.value.trim(); again(); } });
+  const cls = h('select', { 'aria-label': '類別', onchange: () => { hf.cls = cls.value; again(); } },
+    h('option', { value: '' }, '全部類別'), LEDGERS.map((l) => h('option', { value: l.id }, l.name)));
+  const pnl = h('select', { 'aria-label': '損益', onchange: () => { hf.pnl = pnl.value; again(); } },
+    h('option', { value: '' }, '全部損益'), h('option', { value: 'gain' }, '獲利中'), h('option', { value: 'loss' }, '虧損中'));
+  const sort = h('select', { 'aria-label': '排序欄位', onchange: () => { const k = sort.value; hf.sort = k; hf.dir = k === 'asset' || k === 'cls' ? 1 : -1; again(); } },
+    HCOLS.map((c) => h('option', { value: c[0] }, '依' + c[1])));
+  const dir = h('button', { class: 'btn small', type: 'button', onclick: () => { hf.dir = -hf.dir; again(); } }, '');
+  const clr = h('button', { class: 'btn small', type: 'button', onclick: () => { hf.q = ''; hf.cls = ''; hf.pnl = ''; q.value = ''; cls.value = ''; pnl.value = ''; again(); } }, '清除篩選');
+  hui = { q, cls, pnl, sort, dir, clr, sub: h('span', { class: 'card-sub' }), bar: h('div', { class: 'toolbar' }, q, cls, pnl, sort, dir, clr), body: h('div') };
+}
 function renderHoldings(T, D) {
-  clear(el.holdings);
-  el.holdings.appendChild(h('div', { class: 'card-head' }, h('h2', null, '全部持有'), h('span', { class: 'card-sub' }, '依市值排序 · ' + T.rows.length + ' 項')));
-  const rows = T.rows.map((r) => {
+  if (!hui || !hui.bar.isConnected) {
+    if (!hui) buildHoldUi();
+    clear(el.holdings);
+    el.holdings.appendChild(h('div', { class: 'card-head' }, h('h2', null, '全部持有'), hui.sub));
+    el.holdings.appendChild(hui.bar);
+    el.holdings.appendChild(hui.body);
+    el.holdings.appendChild(h('p', { class: 'foot' }, '點欄位名稱可排序，再點一次反向。成本一律以加權平均法計算，可能與設成 FIFO 的帳本略有不同。台股、美股為最近一個交易日收盤價；加密貨幣為幣安即時價。'));
+  }
+  const col = HCOLS.filter((c) => c[0] === hf.sort)[0] || HCOLS[4];
+  const ql = hf.q.toLowerCase();
+  const list = T.rows.filter((r) => {
+    if (hf.cls && r.ledger.id !== hf.cls) return false;
+    if (hf.pnl === 'gain' && !(r.unrealized > 0)) return false;
+    if (hf.pnl === 'loss' && !(r.unrealized < 0)) return false;
+    if (ql && r.asset.toLowerCase().indexOf(ql) < 0 && assetName(r.ledger, r.asset).toLowerCase().indexOf(ql) < 0) return false;
+    return true;
+  });
+  list.sort((a, b) => {
+    const x = col[2](a), y = col[2](b);
+    if (x == null && y == null) return 0;
+    if (x == null) return 1;            // 沒有數值的永遠排最後
+    if (y == null) return -1;
+    const c = typeof x === 'string' ? x.localeCompare(y, 'zh-Hant', { numeric: true }) : x - y;
+    return c ? c * hf.dir : (b.value || 0) - (a.value || 0);
+  });
+  const filtered = holdFiltered();
+  hui.sub.textContent = (filtered ? '顯示 ' + list.length + ' / ' + T.rows.length + ' 項' : T.rows.length + ' 項') + ' · 依' + col[1] + (hf.dir > 0 ? '由小到大' : '由大到小');
+  hui.sort.value = col[0];
+  hui.dir.textContent = hf.dir > 0 ? '↑ 由小到大' : '↓ 由大到小';
+  hui.clr.hidden = !filtered;
+  const rows = list.map((r) => {
     const nm = assetName(r.ledger, r.asset);
     return h('tr', null,
       h('td', null, h('span', { class: 'asset' }, h('span', { class: 'lg-box', style: { background: r.ledger.color }, title: r.ledger.name }), r.asset, nm ? h('span', { class: 'sname' }, nm) : null,
@@ -2905,14 +2965,20 @@ function renderHoldings(T, D) {
       h('td', { 'data-label': '未實現損益', class: signClass(r.unrealized) }, r.unrealized != null ? pnlText(r.unrealized, D) : '—'),
       h('td', { 'data-label': '報酬率', class: signClass(r.unrealized) }, r.unrealizedPct != null ? fmtPct(r.unrealizedPct, true) : '—'));
   });
-  el.holdings.appendChild(h('div', { class: 'tablewrap' }, h('table', { class: 'rt' },
-    h('thead', null, h('tr', null, ['資產', '類別', '現價（原幣）', '日漲跌', '市值', '占總資產', '成本', '未實現損益', '報酬率'].map((t, i) => h('th', { class: i === 1 ? 'l' : '' }, t)))),
+  let fv = 0, fc = 0;
+  list.forEach((r) => { if (r.value != null) { fv += r.value; fc += r.cost; } });
+  const fu = fv - fc;
+  clear(hui.body);
+  if (!list.length) { hui.body.appendChild(h('p', { class: 'muted', style: { padding: '16px 0' } }, '沒有符合條件的持有。')); return; }
+  hui.body.appendChild(h('div', { class: 'tablewrap' }, h('table', { class: 'rt' },
+    h('thead', null, h('tr', null, HCOLS.map((c, i) => h('th', { class: i === 1 ? 'l' : '', 'aria-sort': hf.sort === c[0] ? (hf.dir > 0 ? 'ascending' : 'descending') : null },
+      h('button', { class: 'thsort' + (hf.sort === c[0] ? ' on' : ''), type: 'button', onclick: () => setHoldSort(c[0]) }, c[1],
+        hf.sort === c[0] ? h('span', { class: 'sarr', 'aria-hidden': 'true' }, hf.dir > 0 ? '▲' : '▼') : null))))),
     h('tbody', null, rows),
-    h('tfoot', null, h('tr', null, h('td', null, '合計'), h('td', null, ''), h('td', null, ''), h('td', null, ''),
-      h('td', { 'data-label': '市值' }, fmtMoney(T.value, D)), h('td', null, ''), h('td', { 'data-label': '成本' }, fmtMoney(T.cost, D)),
-      h('td', { 'data-label': '未實現損益', class: signClass(T.unrealized) }, pnlText(T.unrealized, D)),
-      h('td', { 'data-label': '報酬率', class: signClass(T.unrealized) }, T.cost > 0 ? fmtPct(T.unrealized / T.cost, true) : '—'))))));
-  el.holdings.appendChild(h('p', { class: 'foot' }, '成本一律以加權平均法計算，可能與設成 FIFO 的帳本略有不同。台股、美股為最近一個交易日收盤價；加密貨幣為幣安即時價。'));
+    h('tfoot', null, h('tr', null, h('td', null, filtered ? '小計（' + list.length + ' 項）' : '合計'), h('td', null, ''), h('td', null, ''), h('td', null, ''),
+      h('td', { 'data-label': '市值' }, fmtMoney(fv, D)), h('td', { 'data-label': '占總資產' }, T.value > 0 ? fmtPct(fv / T.value) : '—'), h('td', { 'data-label': '成本' }, fmtMoney(fc, D)),
+      h('td', { 'data-label': '未實現損益', class: signClass(fu) }, pnlText(fu, D)),
+      h('td', { 'data-label': '報酬率', class: signClass(fu) }, fc > 0 ? fmtPct(fu / fc, true) : '—'))))));
 }
 
 /* ---------- 設定 ---------- */
@@ -3000,7 +3066,7 @@ function lockNow() {
   document.querySelectorAll('dialog').forEach((d) => d.remove());
   Tip.hide();
   session = null; cfg = null; st = {}; fx = { list: [], spot: null, status: 'idle' }; viewCache = {}; loading = false; loadedAt = null;
-  Object.keys(el).forEach((k) => delete el[k]);
+  Object.keys(el).forEach((k) => delete el[k]); hui = null; hf = { q: '', cls: '', pnl: '', sort: 'value', dir: -1 };
   showLock();
 }
 function enterApp(sess, c) {
